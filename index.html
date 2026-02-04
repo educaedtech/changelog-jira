@@ -214,7 +214,7 @@
         .entry-content { display: flex; flex-direction: column; gap: 8px; }
         .entry-title { font-size: 16px; font-weight: 600; color: var(--color-text); text-decoration: none; }
         .entry-title:hover { color: var(--status-in-progress); }
-        .entry-description { font-size: 14px; color: var(--color-text-secondary); line-height: 1.5; margin: 4px 0; }
+        .entry-description { font-size: 14px; color: var(--color-text-secondary); line-height: 1.5; margin: 4px 0 8px 0; }
         .entry-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
         
         .badge {
@@ -254,7 +254,7 @@
             border-left: 3px solid var(--color-border);
         }
         
-        .loading { text-align: center; padding: 60px; color: var(--color-text-secondary); }
+        .loading { text-align: center; padding: 40px; color: var(--color-text-secondary); }
         .loading-spinner {
             width: 32px; height: 32px;
             border: 3px solid var(--color-border);
@@ -264,6 +264,13 @@
             margin: 0 auto 16px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loading-more {
+            text-align: center;
+            padding: 20px;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
         
         .error {
             background: var(--status-blocked-bg);
@@ -285,19 +292,30 @@
             font-size: 14px;
         }
         
-        .pagination { display: flex; justify-content: center; gap: 8px; padding: 32px 0; }
-        .pagination button {
-            padding: 10px 20px;
-            border: 1px solid var(--color-border);
+        .load-more-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 32px auto;
+            padding: 12px 24px;
             background: var(--color-surface);
+            border: 1px solid var(--color-border);
             border-radius: 6px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
+            color: var(--color-text);
         }
-        .pagination button:hover:not(:disabled) { border-color: var(--color-text); }
-        .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .pagination span { padding: 10px 16px; color: var(--color-text-secondary); }
+        
+        .load-more-btn:hover { border-color: var(--color-text); }
+        .load-more-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .total-count {
+            text-align: center;
+            padding: 16px;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
         
         .empty-state { text-align: center; padding: 60px; color: var(--color-text-secondary); }
         
@@ -309,29 +327,7 @@
     </style>
 </head>
 <body>
-    <div id="app">
-        <header class="header">
-            <div class="header-content">
-                <h1>🔄 Changelog</h1>
-                <p>Proyectos Shopify - EducaEdtech</p>
-            </div>
-        </header>
-        <main class="main">
-            <div class="config-panel">
-                <h2>⚙️ Configuración de Jira</h2>
-                <form id="configForm">
-                    <label>Email de Atlassian</label>
-                    <input type="email" id="emailInput" placeholder="tu@email.com" required>
-                    
-                    <label>API Token</label>
-                    <input type="password" id="tokenInput" placeholder="Tu API token de Jira" required>
-                    <p class="hint">Créalo en: <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank">id.atlassian.com</a></p>
-                    
-                    <button type="submit">Conectar con Jira</button>
-                </form>
-            </div>
-        </main>
-    </div>
+    <div id="app"></div>
 
     <script>
         // ==========================================
@@ -352,6 +348,8 @@
         const JIRA_BASE_URL = 'https://educaedtech.atlassian.net';
         const CORS_PROXY = 'https://jira-proxy.shopify-48b.workers.dev/?url=';
         const BLOCKER_STATUSES = ['PTE REQUISITOS', 'STANDBY', 'RECHAZADA - POR HACER'];
+        const ESTADOS_IGNORAR_VENCIMIENTO = ['COMPLETADA', 'CANCELADA', 'STANDBY', 'PTE REQUISITOS'];
+        const PAGE_SIZE = 100;
         
         // ==========================================
         // ESTADO DE LA APLICACIÓN
@@ -361,11 +359,12 @@
             token: null,
             issues: [],
             loading: false,
+            loadingMore: false,
             error: null,
             selectedProject: 'ALL',
-            page: 0,
-            total: 0,
-            pageSize: 25
+            nextPageToken: null,
+            hasMore: true,
+            total: 0
         };
         
         // ==========================================
@@ -382,12 +381,12 @@
         function formatDate(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
-            return date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+            return date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' });
         }
         
         function truncate(text, maxLength = 140) {
             if (!text) return '';
-            const clean = text.replace(/<[^>]*>/g, '').replace(/\{[^}]*\}/g, '').trim();
+            const clean = String(text).replace(/<[^>]*>/g, '').replace(/\{[^}]*\}/g, '').trim();
             return clean.length <= maxLength ? clean : clean.substring(0, maxLength).trim() + '...';
         }
         
@@ -395,10 +394,15 @@
         function extractTextFromADF(adfContent) {
             if (!adfContent) return '';
             if (typeof adfContent === 'string') return adfContent;
+            if (typeof adfContent !== 'object') return String(adfContent);
             
             let text = '';
             function traverse(node) {
                 if (!node) return;
+                if (typeof node === 'string') {
+                    text += node + ' ';
+                    return;
+                }
                 if (node.text) {
                     text += node.text + ' ';
                 }
@@ -425,24 +429,31 @@
             if (!duedate) return { class: '', text: '' };
             const due = new Date(duedate);
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
             const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
             
-            // Estados donde no se considera vencida aunque haya pasado la fecha
-            const statusUpper = status?.toUpperCase() || '';
-            const ignorarVencimiento = ['COMPLETADA', 'CANCELADA', 'STANDBY', 'PTE REQUISITOS'].includes(statusUpper);
+            const statusUpper = (status || '').toUpperCase();
+            const ignorarVencimiento = ESTADOS_IGNORAR_VENCIMIENTO.includes(statusUpper);
             
             if (diffDays < 0 && !ignorarVencimiento) return { class: 'deadline-overdue', text: '⚠️ Vencida: ' };
-            if (diffDays <= 3 && diffDays >= 0) return { class: 'deadline-soon', text: '⏰ ' };
+            if (diffDays >= 0 && diffDays <= 3) return { class: 'deadline-soon', text: '⏰ ' };
             return { class: '', text: '📅 ' };
         }
         
         // ==========================================
         // API DE JIRA
         // ==========================================
-        async function fetchIssues() {
+        async function fetchIssues(loadMore = false) {
             if (!state.email || !state.token) return;
             
-            state.loading = true;
+            if (loadMore) {
+                state.loadingMore = true;
+            } else {
+                state.loading = true;
+                state.issues = [];
+                state.nextPageToken = null;
+                state.hasMore = true;
+            }
             state.error = null;
             render();
             
@@ -451,8 +462,14 @@
                     ? `project IN ("${PROJECTS.map(p => p.key).join('", "')}")`
                     : `project = "${state.selectedProject}"`;
                 
-                const jql = `${projectFilter} ORDER BY created DESC`;
-                const apiUrl = `${JIRA_BASE_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${state.pageSize}&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate`;
+                const jql = `${projectFilter} ORDER BY updated DESC`;
+                
+                let apiUrl = `${JIRA_BASE_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${PAGE_SIZE}&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate`;
+                
+                if (loadMore && state.nextPageToken) {
+                    apiUrl += `&nextPageToken=${encodeURIComponent(state.nextPageToken)}`;
+                }
+                
                 const fetchUrl = CORS_PROXY + encodeURIComponent(apiUrl);
                 
                 const response = await fetch(fetchUrl, {
@@ -474,12 +491,23 @@
                 }
                 
                 const data = await response.json();
-                state.issues = data.issues || [];
-                state.total = data.total || 0;
+                const newIssues = data.issues || [];
+                
+                if (loadMore) {
+                    state.issues = [...state.issues, ...newIssues];
+                } else {
+                    state.issues = newIssues;
+                    state.total = data.total || newIssues.length;
+                }
+                
+                state.nextPageToken = data.nextPageToken || null;
+                state.hasMore = !data.isLast && data.nextPageToken;
+                
             } catch (err) {
                 state.error = err.message;
             } finally {
                 state.loading = false;
+                state.loadingMore = false;
                 render();
             }
         }
@@ -529,7 +557,6 @@
         function renderMainApp() {
             const stats = calculateStats();
             const blockers = state.issues.filter(i => BLOCKER_STATUSES.includes(i.fields.status?.name?.toUpperCase()));
-            const totalPages = Math.ceil(state.total / state.pageSize);
             
             return `
                 <header class="header">
@@ -567,8 +594,29 @@
                     
                     ${!state.loading && !state.error && state.issues.length > 0 ? `
                         ${renderSummary(stats, blockers)}
+                        
+                        <div class="total-count">
+                            Mostrando ${state.issues.length} de ${state.total} tareas
+                        </div>
+                        
                         ${state.issues.map(issue => renderEntry(issue)).join('')}
-                        ${totalPages > 1 ? renderPagination(totalPages) : ''}
+                        
+                        ${state.hasMore ? `
+                            ${state.loadingMore ? `
+                                <div class="loading-more">
+                                    <div class="loading-spinner"></div>
+                                    Cargando más tareas...
+                                </div>
+                            ` : `
+                                <button class="load-more-btn" id="loadMoreBtn">
+                                    Cargar más tareas (${state.issues.length} / ${state.total})
+                                </button>
+                            `}
+                        ` : `
+                            <div class="total-count">
+                                ✅ Se han cargado todas las ${state.issues.length} tareas
+                            </div>
+                        `}
                     ` : ''}
                     
                     ${!state.loading && !state.error && state.issues.length === 0 ? `
@@ -596,12 +644,14 @@
         
         function renderSummary(stats, blockers) {
             const total = state.issues.length;
-            const estadosIgnorar = ['COMPLETADA', 'CANCELADA', 'STANDBY', 'PTE REQUISITOS'];
             const overdue = state.issues.filter(i => {
                 if (!i.fields.duedate) return false;
-                if (new Date(i.fields.duedate) >= new Date()) return false;
-                const statusUpper = i.fields.status?.name?.toUpperCase() || '';
-                return !estadosIgnorar.includes(statusUpper);
+                const due = new Date(i.fields.duedate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (due >= today) return false;
+                const statusUpper = (i.fields.status?.name || '').toUpperCase();
+                return !ESTADOS_IGNORAR_VENCIMIENTO.includes(statusUpper);
             }).length;
             
             let summaryText = `📊 Este changelog muestra ${total} tareas.`;
@@ -627,12 +677,13 @@
                             <div class="blockers-title">🚫 STOPPERS - Requieren atención inmediata</div>
                             ${blockers.slice(0, 5).map(issue => {
                                 const project = PROJECTS.find(p => p.key === issue.key.split('-')[0]);
-                                const dueStatus = getDueDateStatus(issue.fields.duedate, issue.fields.status?.name);
+                                const statusName = issue.fields.status?.name || '';
+                                const dueStatus = getDueDateStatus(issue.fields.duedate, statusName);
                                 return `
                                     <div class="blocker-item">
                                         <div class="blocker-info">
                                             <a href="${JIRA_BASE_URL}/browse/${issue.key}" target="_blank" class="blocker-title">${issue.fields.summary}</a>
-                                            <div class="blocker-meta">${issue.key} • ${project?.name || ''} • ${issue.fields.status?.name}${issue.fields.assignee ? ' • ' + issue.fields.assignee.displayName : ''}</div>
+                                            <div class="blocker-meta">${issue.key} • ${project?.name || ''} • ${statusName}${issue.fields.assignee ? ' • ' + issue.fields.assignee.displayName : ''}</div>
                                         </div>
                                         ${issue.fields.duedate ? `<span class="blocker-deadline ${dueStatus.class}">${dueStatus.text}${formatDate(issue.fields.duedate)}</span>` : ''}
                                     </div>
@@ -649,18 +700,23 @@
             const project = PROJECTS.find(p => p.key === issue.key.split('-')[0]);
             const dueStatus = getDueDateStatus(issue.fields.duedate, status);
             
-            // Extraer comentarios (API v3 usa formato ADF)
-            const comments = issue.fields.comment?.comments || [];
-            let commentsSummary = null;
-            if (comments.length > 0) {
-                const textos = comments.map(c => extractTextFromADF(c.body)).filter(t => t);
-                if (textos.length > 0) {
-                    commentsSummary = truncate(textos.join(' | '), 140);
-                }
+            // Extraer descripción (API v3 usa formato ADF)
+            let description = '';
+            if (issue.fields.description) {
+                const rawDesc = extractTextFromADF(issue.fields.description);
+                description = truncate(rawDesc, 140);
             }
             
-            // Extraer descripción (API v3 usa formato ADF)
-            const description = issue.fields.description ? truncate(extractTextFromADF(issue.fields.description), 140) : null;
+            // Extraer comentarios (API v3 usa formato ADF) - solo el último comentario
+            let commentsSummary = '';
+            const comments = issue.fields.comment?.comments || [];
+            if (comments.length > 0) {
+                const lastComment = comments[comments.length - 1];
+                if (lastComment && lastComment.body) {
+                    const rawComment = extractTextFromADF(lastComment.body);
+                    commentsSummary = truncate(rawComment, 140);
+                }
+            }
             
             return `
                 <div class="changelog-entry">
@@ -681,16 +737,6 @@
                         </div>
                         ${commentsSummary ? `<div class="entry-comments">💬 ${commentsSummary}</div>` : ''}
                     </div>
-                </div>
-            `;
-        }
-        
-        function renderPagination(totalPages) {
-            return `
-                <div class="pagination">
-                    <button id="prevBtn" ${state.page === 0 ? 'disabled' : ''}>← Anterior</button>
-                    <span>Página ${state.page + 1} de ${totalPages}</span>
-                    <button id="nextBtn" ${state.page >= totalPages - 1 ? 'disabled' : ''}>Siguiente →</button>
                 </div>
             `;
         }
@@ -716,7 +762,6 @@
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     state.selectedProject = btn.dataset.project;
-                    state.page = 0;
                     fetchIssues();
                 });
             });
@@ -734,18 +779,10 @@
                 });
             }
             
-            const prevBtn = document.getElementById('prevBtn');
-            if (prevBtn) {
-                prevBtn.addEventListener('click', () => {
-                    if (state.page > 0) { state.page--; fetchIssues(); }
-                });
-            }
-            
-            const nextBtn = document.getElementById('nextBtn');
-            if (nextBtn) {
-                nextBtn.addEventListener('click', () => {
-                    state.page++;
-                    fetchIssues();
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', () => {
+                    fetchIssues(true);
                 });
             }
         }
