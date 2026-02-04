@@ -214,6 +214,7 @@
         .entry-content { display: flex; flex-direction: column; gap: 8px; }
         .entry-title { font-size: 16px; font-weight: 600; color: var(--color-text); text-decoration: none; }
         .entry-title:hover { color: var(--status-in-progress); }
+        .entry-description { font-size: 14px; color: var(--color-text-secondary); line-height: 1.5; margin: 4px 0; }
         .entry-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
         
         .badge {
@@ -390,6 +391,25 @@
             return clean.length <= maxLength ? clean : clean.substring(0, maxLength).trim() + '...';
         }
         
+        // Extraer texto plano de Atlassian Document Format (ADF)
+        function extractTextFromADF(adfContent) {
+            if (!adfContent) return '';
+            if (typeof adfContent === 'string') return adfContent;
+            
+            let text = '';
+            function traverse(node) {
+                if (!node) return;
+                if (node.text) {
+                    text += node.text + ' ';
+                }
+                if (node.content && Array.isArray(node.content)) {
+                    node.content.forEach(traverse);
+                }
+            }
+            traverse(adfContent);
+            return text.trim();
+        }
+        
         function getStatusClass(status) {
             const map = {
                 'COMPLETADA': 'completada', 'CANCELADA': 'cancelada', 'EN PROGRESO': 'en-progreso',
@@ -401,13 +421,18 @@
             return map[status?.toUpperCase()] || 'por-hacer';
         }
         
-        function getDueDateStatus(duedate) {
+        function getDueDateStatus(duedate, status) {
             if (!duedate) return { class: '', text: '' };
             const due = new Date(duedate);
             const today = new Date();
             const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
-            if (diffDays < 0) return { class: 'deadline-overdue', text: '⚠️ Vencida: ' };
-            if (diffDays <= 3) return { class: 'deadline-soon', text: '⏰ ' };
+            
+            // Estados donde no se considera vencida aunque haya pasado la fecha
+            const statusUpper = status?.toUpperCase() || '';
+            const ignorarVencimiento = ['COMPLETADA', 'CANCELADA', 'STANDBY', 'PTE REQUISITOS'].includes(statusUpper);
+            
+            if (diffDays < 0 && !ignorarVencimiento) return { class: 'deadline-overdue', text: '⚠️ Vencida: ' };
+            if (diffDays <= 3 && diffDays >= 0) return { class: 'deadline-soon', text: '⏰ ' };
             return { class: '', text: '📅 ' };
         }
         
@@ -427,7 +452,7 @@
                     : `project = "${state.selectedProject}"`;
                 
                 const jql = `${projectFilter} ORDER BY created DESC`;
-                const apiUrl = `${JIRA_BASE_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${state.pageSize}&fields=summary,status,created,updated,resolutiondate,assignee,comment,duedate`;
+                const apiUrl = `${JIRA_BASE_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${state.pageSize}&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate`;
                 const fetchUrl = CORS_PROXY + encodeURIComponent(apiUrl);
                 
                 const response = await fetch(fetchUrl, {
@@ -571,7 +596,13 @@
         
         function renderSummary(stats, blockers) {
             const total = state.issues.length;
-            const overdue = state.issues.filter(i => i.fields.duedate && new Date(i.fields.duedate) < new Date() && i.fields.status?.name?.toUpperCase() !== 'COMPLETADA').length;
+            const estadosIgnorar = ['COMPLETADA', 'CANCELADA', 'STANDBY', 'PTE REQUISITOS'];
+            const overdue = state.issues.filter(i => {
+                if (!i.fields.duedate) return false;
+                if (new Date(i.fields.duedate) >= new Date()) return false;
+                const statusUpper = i.fields.status?.name?.toUpperCase() || '';
+                return !estadosIgnorar.includes(statusUpper);
+            }).length;
             
             let summaryText = `📊 Este changelog muestra ${total} tareas.`;
             if (stats.completed > 0) summaryText += ` ✅ ${stats.completed} completadas (${Math.round(stats.completed/total*100)}%).`;
@@ -596,7 +627,7 @@
                             <div class="blockers-title">🚫 STOPPERS - Requieren atención inmediata</div>
                             ${blockers.slice(0, 5).map(issue => {
                                 const project = PROJECTS.find(p => p.key === issue.key.split('-')[0]);
-                                const dueStatus = getDueDateStatus(issue.fields.duedate);
+                                const dueStatus = getDueDateStatus(issue.fields.duedate, issue.fields.status?.name);
                                 return `
                                     <div class="blocker-item">
                                         <div class="blocker-info">
@@ -616,15 +647,27 @@
         function renderEntry(issue) {
             const status = issue.fields.status?.name || 'Sin estado';
             const project = PROJECTS.find(p => p.key === issue.key.split('-')[0]);
-            const dueStatus = getDueDateStatus(issue.fields.duedate);
+            const dueStatus = getDueDateStatus(issue.fields.duedate, status);
+            
+            // Extraer comentarios (API v3 usa formato ADF)
             const comments = issue.fields.comment?.comments || [];
-            const commentsSummary = comments.length > 0 ? truncate(comments.map(c => c.body).join(' | '), 140) : null;
+            let commentsSummary = null;
+            if (comments.length > 0) {
+                const textos = comments.map(c => extractTextFromADF(c.body)).filter(t => t);
+                if (textos.length > 0) {
+                    commentsSummary = truncate(textos.join(' | '), 140);
+                }
+            }
+            
+            // Extraer descripción (API v3 usa formato ADF)
+            const description = issue.fields.description ? truncate(extractTextFromADF(issue.fields.description), 140) : null;
             
             return `
                 <div class="changelog-entry">
                     <div class="entry-date">${formatDate(issue.fields.created)}</div>
                     <div class="entry-content">
                         <a href="${JIRA_BASE_URL}/browse/${issue.key}" target="_blank" class="entry-title">${issue.fields.summary}</a>
+                        ${description ? `<p class="entry-description">${description}</p>` : ''}
                         <div class="entry-badges">
                             <span class="badge status-${getStatusClass(status)}">${status}</span>
                             ${project ? `<span class="badge badge-project">${project.name}</span>` : ''}
