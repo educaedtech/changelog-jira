@@ -427,17 +427,22 @@
                     : `project = ${state.selectedProject}`;
                 
                 const jql = `${projectFilter} ORDER BY created DESC`;
-                const apiUrl = JIRA_BASE_URL + '/rest/api/3/search/jql?jql=' + encodeURIComponent(jql) + '&startAt=' + (state.page * state.pageSize) + '&maxResults=' + state.pageSize + '&fields=summary,status,created,updated,resolutiondate,assignee,comment,duedate';
+                const apiUrl = JIRA_BASE_URL + '/rest/api/3/search/jql';
                 const fetchUrl = CORS_PROXY + encodeURIComponent(apiUrl);
                 
-                console.log('Fetching:', fetchUrl);
-                
                 const response = await fetch(fetchUrl, {
-                    method: 'GET',
+                    method: 'POST',
                     headers: {
                         'Authorization': 'Basic ' + btoa(state.email + ':' + state.token),
-                        'Accept': 'application/json'
-                    }
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        jql: jql,
+                        startAt: state.page * state.pageSize,
+                        maxResults: state.pageSize,
+                        fields: ['summary', 'status', 'created', 'updated', 'resolutiondate', 'assignee', 'comment', 'duedate']
+                    })
                 });
                 
                 if (!response.ok) {
@@ -446,7 +451,8 @@
                     } else if (response.status === 403) {
                         throw new Error('Sin permisos. Verifica que tu usuario tenga acceso a los proyectos.');
                     }
-                    throw new Error('Error ' + response.status + ': ' + response.statusText);
+                    const errorData = await response.text();
+                    throw new Error('Error ' + response.status + ': ' + errorData);
                 }
                 
                 const data = await response.json();
