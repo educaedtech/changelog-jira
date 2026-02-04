@@ -95,7 +95,8 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .progress-bar { width: 100%; max-width: 400px; height: 12px; background: var(--color-border); border-radius: 6px; margin: 20px auto; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--status-in-progress), var(--status-completed)); transition: width 0.3s ease; }
-        .error { background: var(--status-blocked-bg); color: var(--status-blocked); padding: 24px; border-radius: var(--radius); text-align: center; margin: 40px auto; max-width: 500px; }
+        .error { background: var(--status-blocked-bg); color: var(--status-blocked); padding: 24px; border-radius: var(--radius); text-align: center; margin: 40px auto; max-width: 600px; }
+        .error-details { font-size: 12px; margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 4px; text-align: left; font-family: var(--font-mono); }
         .total-count { text-align: center; padding: 16px; color: var(--color-text-secondary); font-size: 14px; background: var(--color-surface); border-radius: var(--radius); margin-bottom: 16px; }
         .total-count strong { color: var(--color-text); }
         .empty-state { text-align: center; padding: 60px; color: var(--color-text-secondary); }
@@ -117,6 +118,12 @@
     <div id="app"></div>
     <script>
         // =====================================================================
+        // CONFIGURACIÓN
+        // =====================================================================
+        const JIRA_URL = 'https://educaedtech.atlassian.net';
+        
+        // El Worker maneja la autenticación - no se necesitan credenciales aquí
+        const CORS_PROXY = 'https://jira-proxy.shopify-48b.workers.dev/?url=';
         
         const PROJECTS = [
             { key: 'SEI', name: 'Euroinnova' },
@@ -130,8 +137,7 @@
             { key: 'EHC', name: 'EduHub Core' }
         ];
         
-        const CORS_PROXY = 'https://jira-proxy.shopify-48b.workers.dev/?url=';
-        const BLOCKER_STATUSES = ['PTE REQUISITOS'];
+        const BLOCKER_STATUSES = ['PTE REQUISITOS''];
         const ESTADOS_IGNORAR_VENCIMIENTO = ['COMPLETADA', 'CANCELADA', 'STANDBY', 'PTE REQUISITOS'];
         const PAGE_SIZE = 100;
         const DISPLAY_PAGE_SIZE = 50;
@@ -144,7 +150,7 @@
         let state = {
             allIssues: [], filteredIssues: [],
             loading: false, loadingProgress: 0, loadingTotal: 0,
-            error: null, selectedProject: 'ALL',
+            error: null, errorDetails: null, selectedProject: 'ALL',
             filterStatus: null, filterEpic: null, filterUser: null,
             epics: [], users: [], currentPage: 0
         };
@@ -261,6 +267,7 @@
             state.loadingProgress = 0;
             state.loadingTotal = 0;
             state.error = null;
+            state.errorDetails = null;
             clearFilters();
             render();
             
@@ -274,21 +281,28 @@
                 let allIssues = [];
                 
                 do {
-                    let apiUrl = `${CONFIG.JIRA_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${PAGE_SIZE}&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent`;
+                    let apiUrl = `${JIRA_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${PAGE_SIZE}&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent`;
                     if (nextPageToken) apiUrl += `&nextPageToken=${encodeURIComponent(nextPageToken)}`;
                     
-                    const response = await fetch(CORS_PROXY + encodeURIComponent(apiUrl), {
+                    const fetchUrl = CORS_PROXY + encodeURIComponent(apiUrl);
+                    
+                    // NO enviamos credenciales - el Worker las añade
+                    const response = await fetch(fetchUrl, {
                         method: 'GET',
                         headers: {
-                            'Authorization': 'Basic ' + btoa(CONFIG.EMAIL + ':' + CONFIG.TOKEN),
                             'Accept': 'application/json'
                         }
                     });
                     
                     if (!response.ok) {
-                        if (response.status === 401) throw new Error('Credenciales inválidas. Revisa EMAIL y TOKEN en el código.');
-                        if (response.status === 403) throw new Error('Sin permisos para acceder a Jira.');
-                        throw new Error('Error ' + response.status);
+                        const errorText = await response.text();
+                        if (response.status === 401) {
+                            throw { message: 'Error de autenticación (401). Verifica las credenciales en el Worker de Cloudflare.', details: errorText };
+                        }
+                        if (response.status === 403) {
+                            throw { message: 'Sin permisos (403). El usuario no tiene acceso a estos proyectos.', details: errorText };
+                        }
+                        throw { message: `Error ${response.status}`, details: errorText };
                     }
                     
                     const data = await response.json();
@@ -307,7 +321,8 @@
                 extractFiltersData();
                 
             } catch (err) {
-                state.error = err.message;
+                state.error = err.message || 'Error de conexión';
+                state.errorDetails = err.details || null;
             } finally {
                 state.loading = false;
                 render();
@@ -339,7 +354,13 @@
                     </div>
                 </nav>
                 <main class="main">
-                    ${state.error ? `<div class="error">⚠️ ${state.error}</div>` : ''}
+                    ${state.error ? `
+                        <div class="error">
+                            <p style="font-size:18px;font-weight:600;">⚠️ ${state.error}</p>
+                            ${state.errorDetails ? `<div class="error-details">${state.errorDetails.substring(0, 500)}</div>` : ''}
+                            <p style="margin-top:16px;font-size:13px;">Verifica que el Worker de Cloudflare tenga las credenciales correctas.</p>
+                        </div>
+                    ` : ''}
                     
                     ${state.loading ? `
                         <div class="loading">
@@ -451,7 +472,7 @@
                             ${blockers.slice(0, 5).map(i => {
                                 const p = PROJECTS.find(x => x.key === i.key.split('-')[0]);
                                 const d = getDueDateStatus(i.fields.duedate, i.fields.status?.name);
-                                return `<div class="blocker-item"><div class="blocker-info"><a href="${CONFIG.JIRA_URL}/browse/${i.key}" target="_blank" class="blocker-title">${i.fields.summary}</a><div class="blocker-meta">${i.key} • ${p?.name || ''} • ${i.fields.status?.name || ''}${i.fields.assignee ? ' • ' + i.fields.assignee.displayName : ''}</div></div>${i.fields.duedate ? `<span class="blocker-deadline ${d.class}">${d.text}${formatDate(i.fields.duedate)}</span>` : ''}</div>`;
+                                return `<div class="blocker-item"><div class="blocker-info"><a href="${JIRA_URL}/browse/${i.key}" target="_blank" class="blocker-title">${i.fields.summary}</a><div class="blocker-meta">${i.key} • ${p?.name || ''} • ${i.fields.status?.name || ''}${i.fields.assignee ? ' • ' + i.fields.assignee.displayName : ''}</div></div>${i.fields.duedate ? `<span class="blocker-deadline ${d.class}">${d.text}${formatDate(i.fields.duedate)}</span>` : ''}</div>`;
                             }).join('')}
                         </div>
                     ` : ''}
@@ -491,13 +512,13 @@
                 <div class="changelog-entry">
                     <div class="entry-date">${formatDate(issue.fields.created)}</div>
                     <div class="entry-content">
-                        <a href="${CONFIG.JIRA_URL}/browse/${issue.key}" target="_blank" class="entry-title">${issue.fields.summary}</a>
+                        <a href="${JIRA_URL}/browse/${issue.key}" target="_blank" class="entry-title">${issue.fields.summary}</a>
                         ${description ? `<p class="entry-description">${description}</p>` : ''}
                         <div class="entry-badges">
                             <span class="badge status-${getStatusClass(status)}">${status}</span>
                             ${project ? `<span class="badge badge-project">${project.name}</span>` : ''}
                             ${epic ? `<span class="badge badge-epic">${truncate(epic, 20)}</span>` : ''}
-                            <a href="${CONFIG.JIRA_URL}/browse/${issue.key}" target="_blank" class="issue-key">${issue.key}</a>
+                            <a href="${JIRA_URL}/browse/${issue.key}" target="_blank" class="issue-key">${issue.key}</a>
                         </div>
                         <div class="entry-meta">
                             ${issue.fields.resolutiondate ? `<span>✅ ${formatDate(issue.fields.resolutiondate)}</span>` : ''}
