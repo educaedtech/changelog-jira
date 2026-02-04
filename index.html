@@ -427,22 +427,15 @@
                     : `project = ${state.selectedProject}`;
                 
                 const jql = `${projectFilter} ORDER BY created DESC`;
-                const apiUrl = JIRA_BASE_URL + '/rest/api/3/search/jql';
+                const apiUrl = JIRA_BASE_URL + '/rest/api/2/search?jql=' + encodeURIComponent(jql) + '&startAt=' + (state.page * state.pageSize) + '&maxResults=' + state.pageSize + '&fields=summary,status,created,updated,resolutiondate,assignee,comment,duedate';
                 const fetchUrl = CORS_PROXY + encodeURIComponent(apiUrl);
                 
                 const response = await fetch(fetchUrl, {
-                    method: 'POST',
+                    method: 'GET',
                     headers: {
                         'Authorization': 'Basic ' + btoa(state.email + ':' + state.token),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        jql: jql,
-                        startAt: state.page * state.pageSize,
-                        maxResults: state.pageSize,
-                        fields: ['summary', 'status', 'created', 'updated', 'resolutiondate', 'assignee', 'comment', 'duedate']
-                    })
+                        'Accept': 'application/json'
+                    }
                 });
                 
                 if (!response.ok) {
