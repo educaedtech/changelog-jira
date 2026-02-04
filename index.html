@@ -131,7 +131,7 @@ ${!S.load&&!S.err&&S.all.length?`
 <div class="stat s-purple ${S.stat==='qa'?'active':''}" data-s="qa"><span>${st.qa}</span><span>En QA</span></div>
 <div class="stat s-red ${S.stat==='blocked'?'active':''}" data-s="blocked"><span>${st.blocked}</span><span>Bloqueadas</span></div>
 <div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
-</div><div class="summary">${genSum(st)}</div></div>
+</div><div class="summary">${genSum(st)}</div>${genStoppers()}</div>
 <div class="fbox"><div class="frow">
 <div class="fgrp"><div class="fgrp-title">Épicas (${S.epics.length})</div><div class="tags">${S.epics.map(e=>`<span class="tag ${S.epic===e.n?'active':''}" data-e="${e.n}">${trunc(e.n,20)} (${e.c})</span>`).join('')||'Sin épicas'}</div></div>
 <div class="fgrp"><div class="fgrp-title">Usuarios (${S.users.length})</div><div class="tags">${S.users.map(u=>`<span class="tag ${S.user===u.n?'active':''}" data-u="${u.n}">${u.n.split(' ')[0]} (${u.c})</span>`).join('')||'Sin usuarios'}</div></div>
@@ -150,48 +150,50 @@ function genSum(s){
 const t=S.all.length;if(!t)return'';
 const pn=S.proj==='ALL'?'TODOS LOS PROYECTOS':PROJECTS.find(p=>p.k===S.proj)?.n?.toUpperCase()||S.proj;
 
-// Calcular métricas adicionales
 const now=new Date();now.setHours(0,0,0,0);
 const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-7);
 
 const overdue=S.all.filter(i=>{if(!i.fields.duedate)return false;const d=new Date(i.fields.duedate);return d<now&&!IGNORE.includes((i.fields.status?.name||'').toUpperCase())}).length;
 const recentDone=S.all.filter(i=>{if((i.fields.status?.name||'').toUpperCase()!=='COMPLETADA'||!i.fields.resolutiondate)return false;return new Date(i.fields.resolutiondate)>=weekAgo}).length;
-const recentUpdated=S.all.filter(i=>i.fields.updated&&new Date(i.fields.updated)>=weekAgo).length;
-const blockers=S.all.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
+const inProgress=S.all.filter(i=>(i.fields.status?.name||'').toUpperCase()==='EN PROGRESO');
 
-let r=`📊 RESUMEN DE ${pn}\n\nEste changelog contiene ${t} tareas desde el inicio del proyecto.\n\n`;
+let r=`📊 RESUMEN DE ${pn}\n\n`;
+r+=`Historial completo: ${t} tareas. `;
+r+=`Completadas: ${s.completed} (${Math.round(s.completed/t*100)}%). `;
+if(recentDone)r+=`Esta semana se completaron ${recentDone}. `;
+if(overdue)r+=`⚠️ ${overdue} con fecha vencida. `;
 
-r+=`📈 ESTADO ACTUAL:\n`;
-if(s.completed)r+=`• ✅ ${s.completed} completadas (${Math.round(s.completed/t*100)}%)\n`;
-if(s.progress)r+=`• 🔄 ${s.progress} en progreso\n`;
-if(s.qa)r+=`• 🧪 ${s.qa} en QA/testing\n`;
-if(s.blocked)r+=`• 🚫 ${s.blocked} bloqueadas - requieren atención\n`;
-if(s.todo)r+=`• ⏳ ${s.todo} pendientes por iniciar\n`;
-if(s.cancelled)r+=`• ❌ ${s.cancelled} canceladas\n`;
-
-if(recentDone||recentUpdated||overdue){
-r+=`\n📅 ACTIVIDAD ÚLTIMA SEMANA:\n`;
-if(recentDone)r+=`• ${recentDone} tareas completadas\n`;
-if(recentUpdated)r+=`• ${recentUpdated} tareas actualizadas\n`;
-if(overdue)r+=`• ⚠️ ${overdue} tareas con fecha vencida\n`;
+if(s.progress||s.qa){
+r+=`\n\n🔄 EN CURSO (${s.progress+s.qa}):\n`;
+inProgress.slice(0,5).forEach(i=>{
+const assignee=i.fields.assignee?.displayName?.split(' ')[0]||'--';
+r+=`• ${trunc(i.fields.summary,55)} (${assignee})\n`;
+});
+if(inProgress.length>5)r+=`• +${inProgress.length-5} más en progreso\n`;
 }
 
-if(blockers.length){
-r+=`\n🚨 STOPPERS (${blockers.length}) - Requieren atención inmediata:\n`;
-blockers.slice(0,5).forEach(b=>{
+return r;
+}
+
+function genStoppers(){
+const blockers=S.all.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
+if(!blockers.length)return'';
+
+let h=`<div style="margin-top:16px;padding:16px;background:#fee2e2;border-radius:8px;border:1px solid #fecaca">`;
+h+=`<div style="font-weight:600;color:#dc2626;margin-bottom:12px">🚨 STOPPERS (${blockers.length}) - Requieren atención inmediata</div>`;
+
+blockers.forEach(b=>{
 const st=b.fields.status?.name||'';
 const assignee=b.fields.assignee?.displayName||'Sin asignar';
-r+=`• [${b.key}] ${trunc(b.fields.summary,50)} - ${st} (${assignee})\n`;
+h+=`<div style="padding:8px 0;border-bottom:1px solid #fecaca;font-size:13px">`;
+h+=`<a href="${JIRA}/browse/${b.key}" target="_blank" style="color:#dc2626;font-weight:600;text-decoration:none">${b.key}</a> `;
+h+=`<span style="color:#1a1a1a">${trunc(b.fields.summary,60)}</span><br>`;
+h+=`<span style="font-size:12px;color:#6b7280">${st} • ${assignee}</span>`;
+h+=`</div>`;
 });
-if(blockers.length>5)r+=`• ...y ${blockers.length-5} más\n`;
-}
 
-if(S.users.length){
-r+=`\n👥 TOP COLABORADORES:\n`;
-S.users.slice(0,5).forEach(u=>r+=`• ${u.n}: ${u.c} tareas\n`);
-}
-
-return r.substring(0,2400);
+h+=`</div>`;
+return h;
 }
 
 function rEntry(i){
