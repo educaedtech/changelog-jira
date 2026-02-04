@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog - Proyectos Shopify</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-bg: #fafafa;
+            --color-surface: #ffffff;
+            --color-text: #1a1a1a;
+            --color-text-secondary: #6b7280;
+            --color-border: #e5e7eb;
+            --color-border-light: #f3f4f6;
+            
+            /* Estados */
+            --status-completed: #16a34a;
+            --status-completed-bg: #dcfce7;
+            --status-in-progress: #2563eb;
+            --status-in-progress-bg: #dbeafe;
+            --status-todo: #6b7280;
+            --status-todo-bg: #f3f4f6;
+            --status-blocked: #dc2626;
+            --status-blocked-bg: #fee2e2;
+            --status-qa: #7c3aed;
+            --status-qa-bg: #ede9fe;
+            --status-cancelled: #78716c;
+            --status-cancelled-bg: #f5f5f4;
+            --status-approval: #f59e0b;
+            --status-approval-bg: #fef3c7;
+            
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 8px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: 24px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+        
+        .header p {
+            color: var(--color-text-secondary);
+            font-size: 15px;
+        }
+        
+        /* Filters */
+        .filters {
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: 16px 0;
+        }
+        
+        .filters-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: var(--font-sans);
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--color-text);
+            color: var(--color-text);
+        }
+        
+        .filter-btn.active {
+            background: var(--color-text);
+            color: white;
+            border-color: var(--color-text);
+        }
+        
+        .filter-label {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            margin-right: 4px;
+        }
+        
+        /* Main content */
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        
+        /* Changelog entry */
+        .changelog-entry {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 24px;
+            padding: 24px 0;
+            border-bottom: 1px solid var(--color-border-light);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .changelog-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .entry-date {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            padding-top: 2px;
+        }
+        
+        .entry-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .entry-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-text);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .entry-title:hover {
+            color: var(--status-in-progress);
+        }
+        
+        .entry-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 2px;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .badge-status {
+            /* Colores dinámicos según estado */
+        }
+        
+        .badge-project {
+            background: var(--color-border-light);
+            color: var(--color-text-secondary);
+        }
+        
+        /* Estados específicos */
+        .status-completada {
+            background: var(--status-completed-bg);
+            color: var(--status-completed);
+        }
+        
+        .status-en-progreso {
+            background: var(--status-in-progress-bg);
+            color: var(--status-in-progress);
+        }
+        
+        .status-por-hacer,
+        .status-estimacion,
+        .status-standby {
+            background: var(--status-todo-bg);
+            color: var(--status-todo);
+        }
+        
+        .status-pte-requisitos,
+        .status-rechazada {
+            background: var(--status-blocked-bg);
+            color: var(--status-blocked);
+        }
+        
+        .status-qa,
+        .status-aprobado-qa {
+            background: var(--status-qa-bg);
+            color: var(--status-qa);
+        }
+        
+        .status-cancelada {
+            background: var(--status-cancelled-bg);
+            color: var(--status-cancelled);
+        }
+        
+        .status-pte-aprobacion {
+            background: var(--status-approval-bg);
+            color: var(--status-approval);
+        }
+        
+        .entry-description {
+            font-size: 15px;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+            max-width: 650px;
+        }
+        
+        .entry-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-top: 4px;
+        }
+        
+        .entry-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .entry-meta svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.7;
+        }
+        
+        .entry-comments {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            font-style: italic;
+            padding: 12px 16px;
+            background: var(--color-border-light);
+            border-radius: var(--radius);
+            margin-top: 8px;
+            border-left: 3px solid var(--color-border);
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--color-text-secondary);
+        }
+        
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--color-border);
+            border-top-color: var(--color-text);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--color-text-secondary);
+        }
+        
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        /* Error */
+        .error {
+            background: var(--status-blocked-bg);
+            color: var(--status-blocked);
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            margin: 24px;
+            text-align: center;
+        }
+        
+        /* Config panel */
+        .config-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin: 24px auto;
+            max-width: 500px;
+        }
+        
+        .config-panel h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+        
+        .config-panel label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--color-text);
+        }
+        
+        .config-panel input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: var(--font-mono);
+            margin-bottom: 16px;
+        }
+        
+        .config-panel input:focus {
+            outline: none;
+            border-color: var(--status-in-progress);
+        }
+        
+        .config-panel button {
+            width: 100%;
+            padding: 12px;
+            background: var(--color-text);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .config-panel button:hover {
+            opacity: 0.9;
+        }
+        
+        .config-panel .hint {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-top: -12px;
+            margin-bottom: 16px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .changelog-entry {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .entry-date {
+                font-size: 13px;
+            }
+            
+            .filters-content {
+                gap: 8px;
+            }
+            
+            .filter-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 32px 0;
+        }
+        
+        .pagination button {
+            padding: 10px 20px;
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            border-color: var(--color-text);
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Issue key link */
+        .issue-key {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--status-in-progress);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .issue-key:hover {
+            text-decoration: underline;
+        }
+        
+        /* Summary section */
+        .summary-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .summary-stats {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .stat-card .stat-count {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .stat-completed { background: var(--status-completed-bg); color: var(--status-completed); }
+        .stat-in-progress { background: var(--status-in-progress-bg); color: var(--status-in-progress); }
+        .stat-blocked { background: var(--status-blocked-bg); color: var(--status-blocked); }
+        .stat-todo { background: var(--status-todo-bg); color: var(--status-todo); }
+        .stat-qa { background: var(--status-qa-bg); color: var(--status-qa); }
+        .stat-cancelled { background: var(--status-cancelled-bg); color: var(--status-cancelled); }
+        
+        .summary-text {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--color-text);
+            margin-bottom: 20px;
+        }
+        
+        .blockers-section {
+            background: var(--status-blocked-bg);
+            border: 1px solid #fecaca;
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+        
+        .blockers-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--status-blocked);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .blocker-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px 0;
+            border-bottom: 1px solid #fecaca;
+            gap: 12px;
+        }
+        
+        .blocker-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .blocker-info {
+            flex: 1;
+        }
+        
+        .blocker-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text);
+            text-decoration: none;
+        }
+        
+        .blocker-title:hover {
+            color: var(--status-in-progress);
+        }
+        
+        .blocker-meta {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-top: 4px;
+        }
+        
+        .blocker-deadline {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--status-blocked);
+            white-space: nowrap;
+        }
+        
+        .deadline-overdue {
+            color: var(--status-blocked);
+            font-weight: 600;
+        }
+        
+        .deadline-soon {
+            color: var(--status-approval);
+        }
+        
+        .deadline-ok {
+            color: var(--color-text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        
+        // Configuración de proyectos
+        const PROJECTS = [
+            { key: 'SEI', name: 'Euroinnova' },
+            { key: 'SEH', name: 'EducaHub' },
+            { key: 'SUM', name: 'Unimiami' },
+            { key: 'SST', name: 'Structuralia' },
+            { key: 'STP', name: 'Temarioenpdf' },
+            { key: 'SFC', name: 'Formación Continua' },
+            { key: 'SCL', name: 'Centro de Lengua Capman' },
+            { key: 'SED', name: 'Entorno Desarrollo' },
+            { key: 'EHC', name: 'EduHub Core' }
+        ];
+        
+        // Mapeo de estados a clases CSS
+        const STATUS_MAP = {
+            'COMPLETADA': 'completada',
+            'CANCELADA': 'cancelada',
+            'EN PROGRESO': 'en-progreso',
+            'POR HACER': 'por-hacer',
+            'ESTIMACIÓN': 'estimacion',
+            'ESTIMACION': 'estimacion',
+            'PTE DE APROBACIÓN': 'pte-aprobacion',
+            'PTE APROBACIÓN PR': 'pte-aprobacion',
+            'PTE REQUISITOS': 'pte-requisitos',
+            'STANDBY': 'standby',
+            'RECHAZADA - POR HACER': 'rechazada',
+            'QA - ENTORNO DEV': 'qa',
+            'QA - ENTORNO PROD': 'qa',
+            'APROBADO QA DEV': 'aprobado-qa'
+        };
+        
+        // Función para formatear fecha
+        const formatDate = (dateString) => {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const options = { month: 'short', day: 'numeric' };
+            return date.toLocaleDateString('es-ES', options);
+        };
+        
+        // Función para truncar texto
+        const truncate = (text, maxLength = 140) => {
+            if (!text) return '';
+            // Limpiar HTML y caracteres especiales
+            const clean = text.replace(/<[^>]*>/g, '').replace(/\{[^}]*\}/g, '').trim();
+            if (clean.length <= maxLength) return clean;
+            return clean.substring(0, maxLength).trim() + '...';
+        };
+        
+        // Función para obtener clase de estado
+        const getStatusClass = (status) => {
+            const normalized = status?.toUpperCase() || '';
+            return STATUS_MAP[normalized] || 'por-hacer';
+        };
+        
+        // Componente de configuración
+        const ConfigPanel = ({ onSave }) => {
+            const [email, setEmail] = useState('');
+            const [token, setToken] = useState('');
+            
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                try {
+                    localStorage.setItem('jira_email', email);
+                    localStorage.setItem('jira_token', token);
+                } catch (err) {
+                    console.warn('localStorage no disponible');
+                }
+                onSave({ email, token });
+            };
+            
+            return (
+                <div className="config-panel">
+                    <h2>⚙️ Configuración de Jira</h2>
+                    <form onSubmit={handleSubmit}>
+                        <label>Email de Atlassian</label>
+                        <input 
+                            type="email" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="tu@email.com"
+                            required
+                        />
+                        
+                        <label>API Token</label>
+                        <input 
+                            type="password" 
+                            value={token}
+                            onChange={(e) => setToken(e.target.value)}
+                            placeholder="Tu API token de Jira"
+                            required
+                        />
+                        <p className="hint">
+                            Créalo en: <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank">id.atlassian.com</a>
+                        </p>
+                        
+                        <button type="submit">Conectar con Jira</button>
+                    </form>
+                </div>
+            );
+        };
+        
+        // Componente de entrada del changelog
+        const ChangelogEntry = ({ issue, jiraBaseUrl }) => {
+            const status = issue.fields.status?.name || 'Sin estado';
+            const statusClass = getStatusClass(status);
+            const projectKey = issue.key.split('-')[0];
+            const project = PROJECTS.find(p => p.key === projectKey);
+            
+            const created = formatDate(issue.fields.created);
+            const updated = formatDate(issue.fields.updated);
+            const resolved = formatDate(issue.fields.resolutiondate);
+            const dueDate = formatDate(issue.fields.duedate);
+            const assignee = issue.fields.assignee?.displayName || 'Sin asignar';
+            
+            // Calcular si está vencida o próxima a vencer
+            const getDueDateClass = () => {
+                if (!issue.fields.duedate) return '';
+                const due = new Date(issue.fields.duedate);
+                const today = new Date();
+                const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+                if (diffDays < 0) return 'deadline-overdue';
+                if (diffDays <= 3) return 'deadline-soon';
+                return 'deadline-ok';
+            };
+            
+            // Obtener resumen de comentarios (concatenar todos y truncar a 140)
+            const comments = issue.fields.comment?.comments || [];
+            const commentsSummary = comments.length > 0 
+                ? truncate(comments.map(c => c.body).join(' | '), 140)
+                : null;
+            
+            return (
+                <div className="changelog-entry">
+                    <div className="entry-date">{created}</div>
+                    <div className="entry-content">
+                        <div className="entry-header">
+                            <a 
+                                href={`${jiraBaseUrl}/browse/${issue.key}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="entry-title"
+                            >
+                                {issue.fields.summary}
+                            </a>
+                        </div>
+                        
+                        <div className="entry-badges">
+                            <span className={`badge badge-status status-${statusClass}`}>
+                                {status}
+                            </span>
+                            {project && (
+                                <span className="badge badge-project">
+                                    {project.name}
+                                </span>
+                            )}
+                            <a 
+                                href={`${jiraBaseUrl}/browse/${issue.key}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="issue-key"
+                            >
+                                {issue.key}
+                            </a>
+                        </div>
+                        
+                        <div className="entry-meta">
+                            {resolved && (
+                                <span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    Completada: {resolved}
+                                </span>
+                            )}
+                            {dueDate && (
+                                <span className={getDueDateClass()}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="16" y1="2" x2="16" y2="6"/>
+                                        <line x1="8" y1="2" x2="8" y2="6"/>
+                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                    </svg>
+                                    Entrega: {dueDate}
+                                </span>
+                            )}
+                            <span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                Actualizada: {updated}
+                            </span>
+                            <span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                Asignado a: {assignee}
+                            </span>
+                        </div>
+                        
+                        {commentsSummary && (
+                            <div className="entry-comments">
+                                💬 {commentsSummary}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+        
+        // Estados que se consideran bloqueadores/stoppers
+        const BLOCKER_STATUSES = ['PTE REQUISITOS', 'STANDBY', 'RECHAZADA - POR HACER'];
+        
+        // Componente de resumen
+        const SummarySection = ({ issues, jiraBaseUrl }) => {
+            // Calcular estadísticas por estado
+            const stats = useMemo(() => {
+                const counts = {
+                    completed: 0,
+                    inProgress: 0,
+                    blocked: 0,
+                    todo: 0,
+                    qa: 0,
+                    cancelled: 0
+                };
+                
+                issues.forEach(issue => {
+                    const status = issue.fields.status?.name?.toUpperCase() || '';
+                    if (status === 'COMPLETADA') counts.completed++;
+                    else if (status === 'EN PROGRESO') counts.inProgress++;
+                    else if (BLOCKER_STATUSES.includes(status)) counts.blocked++;
+                    else if (status.includes('QA') || status.includes('APROBADO')) counts.qa++;
+                    else if (status === 'CANCELADA') counts.cancelled++;
+                    else counts.todo++;
+                });
+                
+                return counts;
+            }, [issues]);
+            
+            // Obtener bloqueadores
+            const blockers = useMemo(() => {
+                return issues
+                    .filter(issue => {
+                        const status = issue.fields.status?.name?.toUpperCase() || '';
+                        return BLOCKER_STATUSES.includes(status);
+                    })
+                    .slice(0, 5); // Máximo 5 bloqueadores
+            }, [issues]);
+            
+            // Generar resumen de texto
+            const summaryText = useMemo(() => {
+                const total = issues.length;
+                if (total === 0) return '';
+                
+                const parts = [];
+                
+                // Resumen general
+                parts.push(`📊 Este changelog muestra ${total} tareas en total.`);
+                
+                // Progreso
+                if (stats.completed > 0) {
+                    const pct = Math.round((stats.completed / total) * 100);
+                    parts.push(`✅ ${stats.completed} completadas (${pct}% del total).`);
+                }
+                
+                if (stats.inProgress > 0) {
+                    parts.push(`🔄 ${stats.inProgress} en progreso actualmente.`);
+                }
+                
+                if (stats.qa > 0) {
+                    parts.push(`🧪 ${stats.qa} en fase de QA/testing.`);
+                }
+                
+                // Alertas
+                if (stats.blocked > 0) {
+                    parts.push(`⚠️ ATENCIÓN: ${stats.blocked} tareas bloqueadas requieren acción inmediata.`);
+                }
+                
+                // Tareas vencidas
+                const overdue = issues.filter(issue => {
+                    if (!issue.fields.duedate) return false;
+                    const due = new Date(issue.fields.duedate);
+                    const today = new Date();
+                    return due < today && issue.fields.status?.name?.toUpperCase() !== 'COMPLETADA';
+                });
+                
+                if (overdue.length > 0) {
+                    parts.push(`🚨 ${overdue.length} tareas con fecha de entrega vencida.`);
+                }
+                
+                if (stats.todo > 0) {
+                    parts.push(`📋 ${stats.todo} pendientes de iniciar.`);
+                }
+                
+                return parts.join(' ');
+            }, [issues, stats]);
+            
+            if (issues.length === 0) return null;
+            
+            return (
+                <div className="summary-section">
+                    <div className="summary-stats">
+                        <div className="stat-card stat-completed">
+                            <span className="stat-count">{stats.completed}</span>
+                            <span>Completadas</span>
+                        </div>
+                        <div className="stat-card stat-in-progress">
+                            <span className="stat-count">{stats.inProgress}</span>
+                            <span>En Progreso</span>
+                        </div>
+                        <div className="stat-card stat-qa">
+                            <span className="stat-count">{stats.qa}</span>
+                            <span>En QA</span>
+                        </div>
+                        <div className="stat-card stat-blocked">
+                            <span className="stat-count">{stats.blocked}</span>
+                            <span>Bloqueadas</span>
+                        </div>
+                        <div className="stat-card stat-todo">
+                            <span className="stat-count">{stats.todo}</span>
+                            <span>Pendientes</span>
+                        </div>
+                        {stats.cancelled > 0 && (
+                            <div className="stat-card stat-cancelled">
+                                <span className="stat-count">{stats.cancelled}</span>
+                                <span>Canceladas</span>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <p className="summary-text">{summaryText}</p>
+                    
+                    {blockers.length > 0 && (
+                        <div className="blockers-section">
+                            <div className="blockers-title">
+                                🚫 STOPPERS - Requieren atención inmediata
+                            </div>
+                            {blockers.map(issue => {
+                                const project = PROJECTS.find(p => p.key === issue.key.split('-')[0]);
+                                const dueDate = issue.fields.duedate ? formatDate(issue.fields.duedate) : null;
+                                const isOverdue = issue.fields.duedate && new Date(issue.fields.duedate) < new Date();
+                                
+                                return (
+                                    <div key={issue.id} className="blocker-item">
+                                        <div className="blocker-info">
+                                            <a 
+                                                href={`${jiraBaseUrl}/browse/${issue.key}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="blocker-title"
+                                            >
+                                                {issue.fields.summary}
+                                            </a>
+                                            <div className="blocker-meta">
+                                                {issue.key} • {project?.name || 'Proyecto'} • {issue.fields.status?.name}
+                                                {issue.fields.assignee && ` • ${issue.fields.assignee.displayName}`}
+                                            </div>
+                                        </div>
+                                        {dueDate && (
+                                            <span className={`blocker-deadline ${isOverdue ? 'deadline-overdue' : ''}`}>
+                                                {isOverdue ? '⚠️ Vencida: ' : '📅 '}{dueDate}
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        
+        // Componente principal
+        const App = () => {
+            // Función segura para acceder a localStorage
+            const safeGetItem = (key) => {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    return null;
+                }
+            };
+            
+            const safeSetItem = (key, value) => {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {
+                    console.warn('localStorage no disponible');
+                }
+            };
+            
+            const safeRemoveItem = (key) => {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {
+                    console.warn('localStorage no disponible');
+                }
+            };
+            
+            const [config, setConfig] = useState(() => ({
+                email: safeGetItem('jira_email'),
+                token: safeGetItem('jira_token')
+            }));
+            const [issues, setIssues] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [selectedProject, setSelectedProject] = useState('ALL');
+            const [page, setPage] = useState(0);
+            const [total, setTotal] = useState(0);
+            
+            // Configuración de Jira
+            const jiraBaseUrl = 'https://educaedtech.atlassian.net'; // Para enlaces
+            
+            // Proxy CORS público (necesario para GitHub Pages)
+            const corsProxy = 'https://corsproxy.io/?';
+            
+            const pageSize = 25;
+            
+            const isConfigured = config.email && config.token;
+            
+            // Fetch issues from Jira
+            const fetchIssues = async () => {
+                if (!isConfigured) return;
+                
+                setLoading(true);
+                setError(null);
+                
+                try {
+                    const projectFilter = selectedProject === 'ALL' 
+                        ? `project IN (${PROJECTS.map(p => p.key).join(', ')})`
+                        : `project = ${selectedProject}`;
+                    
+                    const jql = `${projectFilter} ORDER BY created DESC`;
+                    
+                    // Construir URL de Jira y añadir proxy CORS
+                    const jiraApiUrl = `${jiraBaseUrl}/rest/api/3/search?jql=${encodeURIComponent(jql)}&startAt=${page * pageSize}&maxResults=${pageSize}&fields=summary,status,created,updated,resolutiondate,assignee,comment,duedate`;
+                    const fetchUrl = corsProxy + encodeURIComponent(jiraApiUrl);
+                    
+                    const response = await fetch(
+                        fetchUrl,
+                        {
+                            headers: {
+                                'Authorization': `Basic ${btoa(`${config.email}:${config.token}`)}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+                    
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            throw new Error('Credenciales inválidas. Por favor, verifica tu email y API token.');
+                        }
+                        throw new Error(`Error ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    setIssues(data.issues || []);
+                    setTotal(data.total || 0);
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            useEffect(() => {
+                if (isConfigured) {
+                    fetchIssues();
+                }
+            }, [config, selectedProject, page]);
+            
+            const handleConfigSave = (newConfig) => {
+                setConfig(newConfig);
+            };
+            
+            const handleProjectFilter = (projectKey) => {
+                setSelectedProject(projectKey);
+                setPage(0);
+            };
+            
+            const totalPages = Math.ceil(total / pageSize);
+            
+            if (!isConfigured) {
+                return (
+                    <>
+                        <header className="header">
+                            <div className="header-content">
+                                <h1>🔄 Changelog</h1>
+                                <p>Proyectos Shopify - EducaEdtech</p>
+                            </div>
+                        </header>
+                        <main className="main">
+                            <ConfigPanel onSave={handleConfigSave} />
+                        </main>
+                    </>
+                );
+            }
+            
+            return (
+                <>
+                    <header className="header">
+                        <div className="header-content">
+                            <h1>🔄 Changelog</h1>
+                            <p>Novedades y actualizaciones de los proyectos Shopify</p>
+                        </div>
+                    </header>
+                    
+                    <nav className="filters">
+                        <div className="filters-content">
+                            <span className="filter-label">Filtrar:</span>
+                            <button 
+                                className={`filter-btn ${selectedProject === 'ALL' ? 'active' : ''}`}
+                                onClick={() => handleProjectFilter('ALL')}
+                            >
+                                Todos
+                            </button>
+                            {PROJECTS.map(project => (
+                                <button 
+                                    key={project.key}
+                                    className={`filter-btn ${selectedProject === project.key ? 'active' : ''}`}
+                                    onClick={() => handleProjectFilter(project.key)}
+                                >
+                                    {project.name}
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
+                    
+                    <main className="main">
+                        {!loading && !error && issues.length > 0 && (
+                            <SummarySection issues={issues} jiraBaseUrl={jiraBaseUrl} />
+                        )}
+                        
+                        {error && (
+                            <div className="error">
+                                ⚠️ {error}
+                                <br/>
+                                <button 
+                                    onClick={() => {
+                                        safeRemoveItem('jira_email');
+                                        safeRemoveItem('jira_token');
+                                        setConfig({ email: null, token: null });
+                                    }}
+                                    style={{ marginTop: '12px', background: 'transparent', border: '1px solid currentColor', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', color: 'inherit' }}
+                                >
+                                    Reconfigurar credenciales
+                                </button>
+                            </div>
+                        )}
+                        
+                        {loading && (
+                            <div className="loading">
+                                <div className="loading-spinner"></div>
+                                <p>Cargando tareas desde Jira...</p>
+                            </div>
+                        )}
+                        
+                        {!loading && !error && issues.length === 0 && (
+                            <div className="empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                </svg>
+                                <p>No hay tareas para mostrar</p>
+                            </div>
+                        )}
+                        
+                        {!loading && !error && issues.map(issue => (
+                            <ChangelogEntry 
+                                key={issue.id} 
+                                issue={issue} 
+                                jiraBaseUrl={jiraBaseUrl}
+                            />
+                        ))}
+                        
+                        {!loading && !error && totalPages > 1 && (
+                            <div className="pagination">
+                                <button 
+                                    onClick={() => setPage(p => p - 1)}
+                                    disabled={page === 0}
+                                >
+                                    ← Anterior
+                                </button>
+                                <span style={{ padding: '10px 16px', color: 'var(--color-text-secondary)' }}>
+                                    Página {page + 1} de {totalPages}
+                                </span>
+                                <button 
+                                    onClick={() => setPage(p => p + 1)}
+                                    disabled={page >= totalPages - 1}
+                                >
+                                    Siguiente →
+                                </button>
+                            </div>
+                        )}
+                    </main>
+                </>
+            );
+        };
+        
+        ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+    </script>
+</body>
+</html>
