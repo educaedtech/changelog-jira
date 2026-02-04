@@ -4,230 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Changelog - Proyectos Shopify</title>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
     <style>
         :root {
-            --color-bg: #fafafa;
-            --color-surface: #ffffff;
-            --color-text: #1a1a1a;
-            --color-text-secondary: #6b7280;
-            --color-border: #e5e7eb;
-            --color-border-light: #f3f4f6;
-            --status-completed: #16a34a;
-            --status-completed-bg: #dcfce7;
-            --status-in-progress: #2563eb;
-            --status-in-progress-bg: #dbeafe;
-            --status-todo: #6b7280;
-            --status-todo-bg: #f3f4f6;
-            --status-blocked: #dc2626;
-            --status-blocked-bg: #fee2e2;
-            --status-qa: #7c3aed;
-            --status-qa-bg: #ede9fe;
-            --status-cancelled: #78716c;
-            --status-cancelled-bg: #f5f5f4;
-            --status-approval: #f59e0b;
-            --status-approval-bg: #fef3c7;
+            --color-bg: #fafafa; --color-surface: #ffffff; --color-text: #1a1a1a;
+            --color-text-secondary: #6b7280; --color-border: #e5e7eb; --color-border-light: #f3f4f6;
+            --status-completed: #16a34a; --status-completed-bg: #dcfce7;
+            --status-in-progress: #2563eb; --status-in-progress-bg: #dbeafe;
+            --status-todo: #6b7280; --status-todo-bg: #f3f4f6;
+            --status-blocked: #dc2626; --status-blocked-bg: #fee2e2;
+            --status-qa: #7c3aed; --status-qa-bg: #ede9fe;
+            --status-cancelled: #78716c; --status-cancelled-bg: #f5f5f4;
+            --status-approval: #f59e0b; --status-approval-bg: #fef3c7;
             --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-            --radius: 8px;
+            --font-mono: 'JetBrains Mono', monospace; --radius: 8px;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: var(--font-sans);
-            background: var(--color-bg);
-            color: var(--color-text);
-            line-height: 1.6;
-        }
-        
-        .header {
-            background: var(--color-surface);
-            border-bottom: 1px solid var(--color-border);
-            padding: 24px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .header-content {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-        
+        body { font-family: var(--font-sans); background: var(--color-bg); color: var(--color-text); line-height: 1.6; }
+        .header { background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 24px 0; position: sticky; top: 0; z-index: 100; }
+        .header-content { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
         .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
         .header p { color: var(--color-text-secondary); font-size: 15px; }
-        
-        .filters {
-            background: var(--color-surface);
-            border-bottom: 1px solid var(--color-border);
-            padding: 16px 0;
-        }
-        
-        .filters-content {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 24px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .filter-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--color-border);
-            background: var(--color-surface);
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--color-text-secondary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: var(--font-sans);
-        }
-        
+        .filters { background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 16px 0; }
+        .filters-content { max-width: 1000px; margin: 0 auto; padding: 0 24px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+        .filter-btn { padding: 8px 16px; border: 1px solid var(--color-border); background: var(--color-surface); border-radius: 20px; font-size: 14px; font-weight: 500; color: var(--color-text-secondary); cursor: pointer; transition: all 0.2s ease; font-family: var(--font-sans); }
         .filter-btn:hover { border-color: var(--color-text); color: var(--color-text); }
         .filter-btn.active { background: var(--color-text); color: white; border-color: var(--color-text); }
         .filter-label { font-size: 13px; color: var(--color-text-secondary); font-weight: 500; }
-        
-        .main {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 32px 24px;
-        }
-        
-        .config-panel {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: 24px;
-            max-width: 450px;
-            margin: 40px auto;
-        }
-        
+        .main { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        .config-panel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 24px; max-width: 450px; margin: 40px auto; }
         .config-panel h2 { font-size: 18px; margin-bottom: 20px; }
         .config-panel label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
-        
-        .config-panel input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--color-border);
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: var(--font-mono);
-            margin-bottom: 16px;
-        }
-        
+        .config-panel input { width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 14px; font-family: var(--font-mono); margin-bottom: 16px; }
         .config-panel input:focus { outline: none; border-color: var(--status-in-progress); }
-        
-        .config-panel button {
-            width: 100%;
-            padding: 12px;
-            background: var(--color-text);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
+        .config-panel button { width: 100%; padding: 12px; background: var(--color-text); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
         .config-panel button:hover { opacity: 0.9; }
         .config-panel .hint { font-size: 12px; color: var(--color-text-secondary); margin-top: -12px; margin-bottom: 16px; }
         .config-panel .hint a { color: var(--status-in-progress); }
-        
-        .summary-section {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 32px;
-        }
-        
-        .summary-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
-        
-        .stat-card {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .stat-card .stat-count { font-weight: 700; font-size: 18px; }
+        .summary-section { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; }
+        .summary-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .stat-card { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; border: 2px solid transparent; }
+        .stat-card:hover { transform: scale(1.02); opacity: 0.9; }
+        .stat-card.active { border-color: var(--color-text); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .stat-card .stat-count { font-weight: 700; font-size: 16px; }
         .stat-completed { background: var(--status-completed-bg); color: var(--status-completed); }
         .stat-in-progress { background: var(--status-in-progress-bg); color: var(--status-in-progress); }
         .stat-blocked { background: var(--status-blocked-bg); color: var(--status-blocked); }
         .stat-todo { background: var(--status-todo-bg); color: var(--status-todo); }
         .stat-qa { background: var(--status-qa-bg); color: var(--status-qa); }
         .stat-cancelled { background: var(--status-cancelled-bg); color: var(--status-cancelled); }
-        
-        .summary-text { font-size: 15px; line-height: 1.7; margin-bottom: 20px; }
-        
-        .blockers-section {
-            background: var(--status-blocked-bg);
-            border: 1px solid #fecaca;
-            border-radius: var(--radius);
-            padding: 16px;
-        }
-        
-        .blockers-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--status-blocked);
-            margin-bottom: 12px;
-        }
-        
-        .blocker-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 10px 0;
-            border-bottom: 1px solid #fecaca;
-            gap: 12px;
-        }
-        
+        .summary-text { font-size: 14px; line-height: 1.7; color: var(--color-text); background: var(--color-border-light); padding: 16px; border-radius: var(--radius); margin-bottom: 16px; }
+        .secondary-filters { background: var(--color-border-light); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; }
+        .filter-row { display: flex; gap: 24px; flex-wrap: wrap; }
+        .filter-group { flex: 1; min-width: 200px; }
+        .filter-group-title { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .filter-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+        .filter-tag { padding: 4px 10px; border-radius: 14px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text-secondary); }
+        .filter-tag:hover { border-color: var(--color-text); color: var(--color-text); }
+        .filter-tag.active { background: var(--status-in-progress); color: white; border-color: var(--status-in-progress); }
+        .clear-filters { font-size: 12px; color: var(--status-blocked); cursor: pointer; padding: 4px 10px; background: var(--status-blocked-bg); border-radius: 14px; }
+        .clear-filters:hover { opacity: 0.8; }
+        .blockers-section { background: var(--status-blocked-bg); border: 1px solid #fecaca; border-radius: var(--radius); padding: 16px; margin-top: 16px; }
+        .blockers-title { font-size: 14px; font-weight: 600; color: var(--status-blocked); margin-bottom: 12px; }
+        .blocker-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #fecaca; gap: 12px; }
         .blocker-item:last-child { border-bottom: none; padding-bottom: 0; }
         .blocker-info { flex: 1; }
         .blocker-title { font-size: 14px; font-weight: 500; color: var(--color-text); text-decoration: none; }
         .blocker-title:hover { color: var(--status-in-progress); }
         .blocker-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
-        .blocker-deadline { font-size: 12px; font-weight: 600; color: var(--status-blocked); }
-        
-        .changelog-entry {
-            display: grid;
-            grid-template-columns: 100px 1fr;
-            gap: 24px;
-            padding: 24px 0;
-            border-bottom: 1px solid var(--color-border-light);
-        }
-        
-        .entry-date { font-size: 14px; color: var(--color-text-secondary); font-weight: 500; }
-        .entry-content { display: flex; flex-direction: column; gap: 8px; }
-        .entry-title { font-size: 16px; font-weight: 600; color: var(--color-text); text-decoration: none; }
+        .blocker-deadline { font-size: 12px; font-weight: 600; color: var(--status-blocked); white-space: nowrap; }
+        .changelog-entry { display: grid; grid-template-columns: 90px 1fr; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--color-border-light); }
+        .entry-date { font-size: 13px; color: var(--color-text-secondary); font-weight: 500; }
+        .entry-content { display: flex; flex-direction: column; gap: 6px; }
+        .entry-title { font-size: 15px; font-weight: 600; color: var(--color-text); text-decoration: none; }
         .entry-title:hover { color: var(--status-in-progress); }
-        .entry-description { font-size: 14px; color: var(--color-text-secondary); line-height: 1.5; margin: 4px 0 8px 0; }
-        .entry-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
-        
-        .badge {
-            display: inline-flex;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        
+        .entry-description { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+        .entry-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+        .badge { display: inline-flex; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
         .badge-project { background: var(--color-border-light); color: var(--color-text-secondary); }
+        .badge-epic { background: #e0e7ff; color: #4338ca; }
         .status-completada { background: var(--status-completed-bg); color: var(--status-completed); }
         .status-en-progreso { background: var(--status-in-progress-bg); color: var(--status-in-progress); }
         .status-por-hacer, .status-estimacion, .status-standby { background: var(--status-todo-bg); color: var(--status-todo); }
@@ -235,103 +92,37 @@
         .status-qa { background: var(--status-qa-bg); color: var(--status-qa); }
         .status-cancelada { background: var(--status-cancelled-bg); color: var(--status-cancelled); }
         .status-pte-aprobacion { background: var(--status-approval-bg); color: var(--status-approval); }
-        
-        .entry-meta { display: flex; gap: 16px; font-size: 13px; color: var(--color-text-secondary); flex-wrap: wrap; }
+        .entry-meta { display: flex; gap: 12px; font-size: 12px; color: var(--color-text-secondary); flex-wrap: wrap; }
         .deadline-overdue { color: var(--status-blocked); font-weight: 600; }
         .deadline-soon { color: var(--status-approval); }
-        
-        .issue-key { font-family: var(--font-mono); font-size: 12px; color: var(--status-in-progress); text-decoration: none; font-weight: 500; }
+        .issue-key { font-family: var(--font-mono); font-size: 11px; color: var(--status-in-progress); text-decoration: none; font-weight: 500; }
         .issue-key:hover { text-decoration: underline; }
-        
-        .entry-comments {
-            font-size: 14px;
-            color: var(--color-text-secondary);
-            font-style: italic;
-            padding: 12px 16px;
-            background: var(--color-border-light);
-            border-radius: var(--radius);
-            margin-top: 8px;
-            border-left: 3px solid var(--color-border);
-        }
-        
+        .entry-comments { font-size: 13px; color: var(--color-text); padding: 10px 14px; background: var(--color-border-light); border-radius: var(--radius); margin-top: 6px; border-left: 3px solid var(--status-in-progress); }
         .loading { text-align: center; padding: 40px; color: var(--color-text-secondary); }
-        .loading-spinner {
-            width: 32px; height: 32px;
-            border: 3px solid var(--color-border);
-            border-top-color: var(--color-text);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
-        }
+        .loading-spinner { width: 32px; height: 32px; border: 3px solid var(--color-border); border-top-color: var(--color-text); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .loading-more {
-            text-align: center;
-            padding: 20px;
-            color: var(--color-text-secondary);
-            font-size: 14px;
-        }
-        
-        .error {
-            background: var(--status-blocked-bg);
-            color: var(--status-blocked);
-            padding: 16px 24px;
-            border-radius: var(--radius);
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        
-        .error button {
-            margin-top: 12px;
-            background: transparent;
-            border: 1px solid currentColor;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            color: inherit;
-            font-size: 14px;
-        }
-        
-        .load-more-btn {
-            display: block;
-            width: 100%;
-            max-width: 300px;
-            margin: 32px auto;
-            padding: 12px 24px;
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            color: var(--color-text);
-        }
-        
+        .loading-more { text-align: center; padding: 20px; color: var(--color-text-secondary); font-size: 14px; }
+        .error { background: var(--status-blocked-bg); color: var(--status-blocked); padding: 16px 24px; border-radius: var(--radius); text-align: center; margin-bottom: 24px; }
+        .error button { margin-top: 12px; background: transparent; border: 1px solid currentColor; padding: 8px 16px; border-radius: 4px; cursor: pointer; color: inherit; font-size: 14px; }
+        .load-more-btn { display: block; width: 100%; max-width: 300px; margin: 32px auto; padding: 12px 24px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--color-text); }
         .load-more-btn:hover { border-color: var(--color-text); }
         .load-more-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        .total-count {
-            text-align: center;
-            padding: 16px;
-            color: var(--color-text-secondary);
-            font-size: 14px;
-        }
-        
+        .total-count { text-align: center; padding: 16px; color: var(--color-text-secondary); font-size: 14px; }
         .empty-state { text-align: center; padding: 60px; color: var(--color-text-secondary); }
-        
+        .no-results { text-align: center; padding: 40px; color: var(--color-text-secondary); background: var(--color-border-light); border-radius: var(--radius); margin: 20px 0; }
         @media (max-width: 640px) {
             .changelog-entry { grid-template-columns: 1fr; gap: 8px; }
             .filters-content { gap: 8px; }
             .filter-btn { padding: 6px 12px; font-size: 13px; }
+            .filter-row { flex-direction: column; gap: 16px; }
         }
     </style>
 </head>
 <body>
     <div id="app"></div>
-
     <script>
         // ==========================================
-        // CONFIGURACIÓN - EDITAR AQUÍ LOS PROYECTOS
+        // CONFIGURACIÓN
         // ==========================================
         const PROJECTS = [
             { key: 'SEI', name: 'Euroinnova' },
@@ -349,22 +140,41 @@
         const CORS_PROXY = 'https://jira-proxy.shopify-48b.workers.dev/?url=';
         const BLOCKER_STATUSES = ['PTE REQUISITOS', 'STANDBY', 'RECHAZADA - POR HACER'];
         const ESTADOS_IGNORAR_VENCIMIENTO = ['COMPLETADA', 'CANCELADA', 'STANDBY', 'PTE REQUISITOS'];
-        const PAGE_SIZE = 100;
+        const PAGE_SIZE = 500;
+        
+        // Mensajes automáticos a filtrar en comentarios
+        const COMMENT_FILTERS = [
+            'This work item, including any attachments was created based on',
+            'created based on someone\'s response to a Jira form',
+            'Email address:',
+            'Automation for Jira',
+            'This issue was automatically',
+            '[Automation]',
+            'has been automatically'
+        ];
         
         // ==========================================
-        // ESTADO DE LA APLICACIÓN
+        // ESTADO
         // ==========================================
         let state = {
             email: null,
             token: null,
             issues: [],
+            allIssues: [], // Todas las issues sin filtrar
             loading: false,
             loadingMore: false,
             error: null,
             selectedProject: 'ALL',
             nextPageToken: null,
             hasMore: true,
-            total: 0
+            total: 0,
+            // Filtros secundarios
+            filterStatus: null,
+            filterEpic: null,
+            filterUser: null,
+            // Datos para filtros
+            epics: [],
+            users: []
         };
         
         // ==========================================
@@ -381,16 +191,15 @@
         function formatDate(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
-            return date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' });
+            return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
         }
         
         function truncate(text, maxLength = 140) {
             if (!text) return '';
-            const clean = String(text).replace(/<[^>]*>/g, '').replace(/\{[^}]*\}/g, '').trim();
+            const clean = String(text).replace(/<[^>]*>/g, '').replace(/\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim();
             return clean.length <= maxLength ? clean : clean.substring(0, maxLength).trim() + '...';
         }
         
-        // Extraer texto plano de Atlassian Document Format (ADF)
         function extractTextFromADF(adfContent) {
             if (!adfContent) return '';
             if (typeof adfContent === 'string') return adfContent;
@@ -399,19 +208,33 @@
             let text = '';
             function traverse(node) {
                 if (!node) return;
-                if (typeof node === 'string') {
-                    text += node + ' ';
-                    return;
-                }
-                if (node.text) {
-                    text += node.text + ' ';
-                }
-                if (node.content && Array.isArray(node.content)) {
-                    node.content.forEach(traverse);
-                }
+                if (typeof node === 'string') { text += node + ' '; return; }
+                if (node.text) text += node.text + ' ';
+                if (node.content && Array.isArray(node.content)) node.content.forEach(traverse);
             }
             traverse(adfContent);
             return text.trim();
+        }
+        
+        function isAutoComment(text) {
+            if (!text) return true;
+            const lower = text.toLowerCase();
+            return COMMENT_FILTERS.some(filter => lower.includes(filter.toLowerCase()));
+        }
+        
+        function getRelevantComment(comments) {
+            if (!comments || comments.length === 0) return '';
+            
+            // Buscar comentarios relevantes (no automáticos) de más reciente a más antiguo
+            for (let i = comments.length - 1; i >= 0; i--) {
+                const comment = comments[i];
+                if (!comment || !comment.body) continue;
+                const text = extractTextFromADF(comment.body);
+                if (text && !isAutoComment(text) && text.length > 10) {
+                    return truncate(text, 200);
+                }
+            }
+            return '';
         }
         
         function getStatusClass(status) {
@@ -423,6 +246,16 @@
                 'QA - ENTORNO DEV': 'qa', 'QA - ENTORNO PROD': 'qa', 'APROBADO QA DEV': 'qa'
             };
             return map[status?.toUpperCase()] || 'por-hacer';
+        }
+        
+        function getStatusCategory(status) {
+            const s = (status || '').toUpperCase();
+            if (s === 'COMPLETADA') return 'completed';
+            if (s === 'EN PROGRESO') return 'inProgress';
+            if (s.includes('QA') || s.includes('APROBADO')) return 'qa';
+            if (BLOCKER_STATUSES.includes(s)) return 'blocked';
+            if (s === 'CANCELADA') return 'cancelled';
+            return 'todo';
         }
         
         function getDueDateStatus(duedate, status) {
@@ -440,6 +273,50 @@
             return { class: '', text: '📅 ' };
         }
         
+        function extractFiltersData() {
+            const epicsSet = new Set();
+            const usersSet = new Set();
+            
+            state.allIssues.forEach(issue => {
+                // Épicas (parent)
+                if (issue.fields.parent?.fields?.summary) {
+                    epicsSet.add(issue.fields.parent.fields.summary);
+                }
+                // Usuarios
+                if (issue.fields.assignee?.displayName) {
+                    usersSet.add(issue.fields.assignee.displayName);
+                }
+            });
+            
+            state.epics = Array.from(epicsSet).sort();
+            state.users = Array.from(usersSet).sort();
+        }
+        
+        function applyFilters() {
+            let filtered = [...state.allIssues];
+            
+            if (state.filterStatus) {
+                filtered = filtered.filter(i => getStatusCategory(i.fields.status?.name) === state.filterStatus);
+            }
+            
+            if (state.filterEpic) {
+                filtered = filtered.filter(i => i.fields.parent?.fields?.summary === state.filterEpic);
+            }
+            
+            if (state.filterUser) {
+                filtered = filtered.filter(i => i.fields.assignee?.displayName === state.filterUser);
+            }
+            
+            state.issues = filtered;
+        }
+        
+        function clearFilters() {
+            state.filterStatus = null;
+            state.filterEpic = null;
+            state.filterUser = null;
+            state.issues = [...state.allIssues];
+        }
+        
         // ==========================================
         // API DE JIRA
         // ==========================================
@@ -450,9 +327,11 @@
                 state.loadingMore = true;
             } else {
                 state.loading = true;
+                state.allIssues = [];
                 state.issues = [];
                 state.nextPageToken = null;
                 state.hasMore = true;
+                clearFilters();
             }
             state.error = null;
             render();
@@ -464,7 +343,7 @@
                 
                 const jql = `${projectFilter} ORDER BY updated DESC`;
                 
-                let apiUrl = `${JIRA_BASE_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${PAGE_SIZE}&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate`;
+                let apiUrl = `${JIRA_BASE_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${PAGE_SIZE}&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent`;
                 
                 if (loadMore && state.nextPageToken) {
                     apiUrl += `&nextPageToken=${encodeURIComponent(state.nextPageToken)}`;
@@ -481,11 +360,8 @@
                 });
                 
                 if (!response.ok) {
-                    if (response.status === 401) {
-                        throw new Error('Credenciales inválidas. Verifica tu email y API token.');
-                    } else if (response.status === 403) {
-                        throw new Error('Sin permisos. Verifica que tu usuario tenga acceso a los proyectos.');
-                    }
+                    if (response.status === 401) throw new Error('Credenciales inválidas.');
+                    if (response.status === 403) throw new Error('Sin permisos.');
                     const errorData = await response.text();
                     throw new Error('Error ' + response.status + ': ' + errorData);
                 }
@@ -493,15 +369,13 @@
                 const data = await response.json();
                 const newIssues = data.issues || [];
                 
-                if (loadMore) {
-                    state.issues = [...state.issues, ...newIssues];
-                } else {
-                    state.issues = newIssues;
-                    state.total = data.total || newIssues.length;
-                }
-                
+                state.allIssues = loadMore ? [...state.allIssues, ...newIssues] : newIssues;
+                state.issues = [...state.allIssues];
+                state.total = data.total || state.allIssues.length;
                 state.nextPageToken = data.nextPageToken || null;
                 state.hasMore = !data.isLast && data.nextPageToken;
+                
+                extractFiltersData();
                 
             } catch (err) {
                 state.error = err.message;
@@ -530,23 +404,16 @@
         
         function renderConfigPanel() {
             return `
-                <header class="header">
-                    <div class="header-content">
-                        <h1>🔄 Changelog</h1>
-                        <p>Proyectos Shopify - EducaEdtech</p>
-                    </div>
-                </header>
+                <header class="header"><div class="header-content"><h1>🔄 Changelog</h1><p>Proyectos Shopify - EducaEdtech</p></div></header>
                 <main class="main">
                     <div class="config-panel">
                         <h2>⚙️ Configuración de Jira</h2>
                         <form id="configForm">
                             <label>Email de Atlassian</label>
                             <input type="email" id="emailInput" placeholder="tu@email.com" required>
-                            
                             <label>API Token</label>
                             <input type="password" id="tokenInput" placeholder="Tu API token de Jira" required>
                             <p class="hint">Créalo en: <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank">id.atlassian.com</a></p>
-                            
                             <button type="submit">Conectar con Jira</button>
                         </form>
                     </div>
@@ -557,121 +424,148 @@
         function renderMainApp() {
             const stats = calculateStats();
             const blockers = state.issues.filter(i => BLOCKER_STATUSES.includes(i.fields.status?.name?.toUpperCase()));
+            const hasFilters = state.filterStatus || state.filterEpic || state.filterUser;
             
             return `
-                <header class="header">
-                    <div class="header-content">
-                        <h1>🔄 Changelog</h1>
-                        <p>Novedades y actualizaciones de los proyectos Shopify</p>
-                    </div>
-                </header>
-                
+                <header class="header"><div class="header-content"><h1>🔄 Changelog</h1><p>Novedades y actualizaciones de los proyectos Shopify</p></div></header>
                 <nav class="filters">
                     <div class="filters-content">
-                        <span class="filter-label">Filtrar:</span>
+                        <span class="filter-label">Proyecto:</span>
                         <button class="filter-btn ${state.selectedProject === 'ALL' ? 'active' : ''}" data-project="ALL">Todos</button>
-                        ${PROJECTS.map(p => `
-                            <button class="filter-btn ${state.selectedProject === p.key ? 'active' : ''}" data-project="${p.key}">${p.name}</button>
-                        `).join('')}
+                        ${PROJECTS.map(p => `<button class="filter-btn ${state.selectedProject === p.key ? 'active' : ''}" data-project="${p.key}">${p.name}</button>`).join('')}
                     </div>
                 </nav>
-                
                 <main class="main">
-                    ${state.error ? `
-                        <div class="error">
-                            ⚠️ ${state.error}
-                            <br>
-                            <button id="resetBtn">Reconfigurar credenciales</button>
-                        </div>
-                    ` : ''}
-                    
-                    ${state.loading ? `
-                        <div class="loading">
-                            <div class="loading-spinner"></div>
-                            <p>Cargando tareas desde Jira...</p>
-                        </div>
-                    ` : ''}
-                    
-                    ${!state.loading && !state.error && state.issues.length > 0 ? `
+                    ${state.error ? `<div class="error">⚠️ ${state.error}<br><button id="resetBtn">Reconfigurar credenciales</button></div>` : ''}
+                    ${state.loading ? `<div class="loading"><div class="loading-spinner"></div><p>Cargando tareas desde Jira...</p></div>` : ''}
+                    ${!state.loading && !state.error && state.allIssues.length > 0 ? `
                         ${renderSummary(stats, blockers)}
-                        
+                        ${renderSecondaryFilters(hasFilters)}
                         <div class="total-count">
-                            Mostrando ${state.issues.length} de ${state.total} tareas
+                            ${hasFilters ? `Mostrando ${state.issues.length} de ${state.allIssues.length} tareas (filtrado)` : `Mostrando ${state.allIssues.length} de ${state.total} tareas`}
                         </div>
-                        
-                        ${state.issues.map(issue => renderEntry(issue)).join('')}
-                        
-                        ${state.hasMore ? `
-                            ${state.loadingMore ? `
-                                <div class="loading-more">
-                                    <div class="loading-spinner"></div>
-                                    Cargando más tareas...
-                                </div>
-                            ` : `
-                                <button class="load-more-btn" id="loadMoreBtn">
-                                    Cargar más tareas (${state.issues.length} / ${state.total})
-                                </button>
-                            `}
-                        ` : `
-                            <div class="total-count">
-                                ✅ Se han cargado todas las ${state.issues.length} tareas
-                            </div>
-                        `}
+                        ${state.issues.length > 0 ? state.issues.map(issue => renderEntry(issue)).join('') : '<div class="no-results">No hay tareas que coincidan con los filtros seleccionados</div>'}
+                        ${!hasFilters && state.hasMore ? `
+                            ${state.loadingMore ? `<div class="loading-more"><div class="loading-spinner"></div>Cargando más tareas...</div>` : `<button class="load-more-btn" id="loadMoreBtn">Cargar más tareas (${state.allIssues.length} / ${state.total})</button>`}
+                        ` : !hasFilters ? `<div class="total-count">✅ Se han cargado todas las ${state.allIssues.length} tareas</div>` : ''}
                     ` : ''}
-                    
-                    ${!state.loading && !state.error && state.issues.length === 0 ? `
-                        <div class="empty-state">
-                            <p>No hay tareas para mostrar</p>
-                        </div>
-                    ` : ''}
+                    ${!state.loading && !state.error && state.allIssues.length === 0 ? `<div class="empty-state"><p>No hay tareas para mostrar</p></div>` : ''}
                 </main>
             `;
         }
         
         function calculateStats() {
+            const issues = state.allIssues;
             const stats = { completed: 0, inProgress: 0, blocked: 0, todo: 0, qa: 0, cancelled: 0 };
-            state.issues.forEach(issue => {
-                const status = issue.fields.status?.name?.toUpperCase() || '';
-                if (status === 'COMPLETADA') stats.completed++;
-                else if (status === 'EN PROGRESO') stats.inProgress++;
-                else if (BLOCKER_STATUSES.includes(status)) stats.blocked++;
-                else if (status.includes('QA') || status.includes('APROBADO')) stats.qa++;
-                else if (status === 'CANCELADA') stats.cancelled++;
+            issues.forEach(issue => {
+                const cat = getStatusCategory(issue.fields.status?.name);
+                if (cat === 'completed') stats.completed++;
+                else if (cat === 'inProgress') stats.inProgress++;
+                else if (cat === 'blocked') stats.blocked++;
+                else if (cat === 'qa') stats.qa++;
+                else if (cat === 'cancelled') stats.cancelled++;
                 else stats.todo++;
             });
             return stats;
         }
         
-        function renderSummary(stats, blockers) {
-            const total = state.issues.length;
-            const overdue = state.issues.filter(i => {
+        function generateDetailedSummary(stats) {
+            const total = state.allIssues.length;
+            if (total === 0) return '';
+            
+            const projectName = state.selectedProject === 'ALL' ? 'todos los proyectos' : PROJECTS.find(p => p.key === state.selectedProject)?.name || state.selectedProject;
+            
+            // Calcular métricas adicionales
+            const overdue = state.allIssues.filter(i => {
                 if (!i.fields.duedate) return false;
                 const due = new Date(i.fields.duedate);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+                const today = new Date(); today.setHours(0,0,0,0);
                 if (due >= today) return false;
-                const statusUpper = (i.fields.status?.name || '').toUpperCase();
-                return !ESTADOS_IGNORAR_VENCIMIENTO.includes(statusUpper);
+                return !ESTADOS_IGNORAR_VENCIMIENTO.includes((i.fields.status?.name || '').toUpperCase());
             }).length;
             
-            let summaryText = `📊 Este changelog muestra ${total} tareas.`;
-            if (stats.completed > 0) summaryText += ` ✅ ${stats.completed} completadas (${Math.round(stats.completed/total*100)}%).`;
-            if (stats.inProgress > 0) summaryText += ` 🔄 ${stats.inProgress} en progreso.`;
-            if (stats.qa > 0) summaryText += ` 🧪 ${stats.qa} en QA.`;
-            if (stats.blocked > 0) summaryText += ` ⚠️ ${stats.blocked} bloqueadas.`;
-            if (overdue > 0) summaryText += ` 🚨 ${overdue} vencidas.`;
+            const thisWeek = state.allIssues.filter(i => {
+                if (!i.fields.updated) return false;
+                const updated = new Date(i.fields.updated);
+                const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+                return updated >= weekAgo;
+            }).length;
+            
+            const recentlyCompleted = state.allIssues.filter(i => {
+                if (i.fields.status?.name?.toUpperCase() !== 'COMPLETADA') return false;
+                if (!i.fields.resolutiondate) return false;
+                const resolved = new Date(i.fields.resolutiondate);
+                const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+                return resolved >= weekAgo;
+            }).length;
+            
+            // Usuarios más activos
+            const userCounts = {};
+            state.allIssues.forEach(i => {
+                const user = i.fields.assignee?.displayName;
+                if (user) userCounts[user] = (userCounts[user] || 0) + 1;
+            });
+            const topUsers = Object.entries(userCounts).sort((a,b) => b[1] - a[1]).slice(0, 3);
+            
+            // Construir resumen
+            let summary = `📊 RESUMEN DE ${projectName.toUpperCase()}\n\n`;
+            summary += `Este changelog contiene ${total} tareas en total. `;
+            
+            if (stats.completed > 0) {
+                const pct = Math.round(stats.completed/total*100);
+                summary += `Se han completado ${stats.completed} tareas (${pct}% del total). `;
+            }
+            
+            if (recentlyCompleted > 0) {
+                summary += `En la última semana se completaron ${recentlyCompleted} tareas. `;
+            }
+            
+            if (stats.inProgress > 0) {
+                summary += `Actualmente hay ${stats.inProgress} tareas en progreso. `;
+            }
+            
+            if (stats.qa > 0) {
+                summary += `${stats.qa} tareas están en fase de QA/testing. `;
+            }
+            
+            if (stats.blocked > 0) {
+                summary += `⚠️ ATENCIÓN: ${stats.blocked} tareas están bloqueadas y requieren acción. `;
+            }
+            
+            if (overdue > 0) {
+                summary += `🚨 Hay ${overdue} tareas con fecha de entrega vencida. `;
+            }
+            
+            if (stats.todo > 0) {
+                summary += `Quedan ${stats.todo} tareas pendientes por iniciar. `;
+            }
+            
+            if (thisWeek > 0) {
+                summary += `\n\n📅 ${thisWeek} tareas fueron actualizadas en los últimos 7 días. `;
+            }
+            
+            if (topUsers.length > 0) {
+                summary += `\n\n👥 Colaboradores principales: ${topUsers.map(([name, count]) => `${name} (${count})`).join(', ')}.`;
+            }
+            
+            return truncate(summary, 2400);
+        }
+        
+        function renderSummary(stats, blockers) {
+            const total = state.allIssues.length;
+            const summaryText = generateDetailedSummary(stats);
             
             return `
                 <div class="summary-section">
                     <div class="summary-stats">
-                        <div class="stat-card stat-completed"><span class="stat-count">${stats.completed}</span><span>Completadas</span></div>
-                        <div class="stat-card stat-in-progress"><span class="stat-count">${stats.inProgress}</span><span>En Progreso</span></div>
-                        <div class="stat-card stat-qa"><span class="stat-count">${stats.qa}</span><span>En QA</span></div>
-                        <div class="stat-card stat-blocked"><span class="stat-count">${stats.blocked}</span><span>Bloqueadas</span></div>
-                        <div class="stat-card stat-todo"><span class="stat-count">${stats.todo}</span><span>Pendientes</span></div>
-                        ${stats.cancelled > 0 ? `<div class="stat-card stat-cancelled"><span class="stat-count">${stats.cancelled}</span><span>Canceladas</span></div>` : ''}
+                        <div class="stat-card stat-completed ${state.filterStatus === 'completed' ? 'active' : ''}" data-status="completed"><span class="stat-count">${stats.completed}</span><span>Completadas</span></div>
+                        <div class="stat-card stat-in-progress ${state.filterStatus === 'inProgress' ? 'active' : ''}" data-status="inProgress"><span class="stat-count">${stats.inProgress}</span><span>En Progreso</span></div>
+                        <div class="stat-card stat-qa ${state.filterStatus === 'qa' ? 'active' : ''}" data-status="qa"><span class="stat-count">${stats.qa}</span><span>En QA</span></div>
+                        <div class="stat-card stat-blocked ${state.filterStatus === 'blocked' ? 'active' : ''}" data-status="blocked"><span class="stat-count">${stats.blocked}</span><span>Bloqueadas</span></div>
+                        <div class="stat-card stat-todo ${state.filterStatus === 'todo' ? 'active' : ''}" data-status="todo"><span class="stat-count">${stats.todo}</span><span>Pendientes</span></div>
+                        ${stats.cancelled > 0 ? `<div class="stat-card stat-cancelled ${state.filterStatus === 'cancelled' ? 'active' : ''}" data-status="cancelled"><span class="stat-count">${stats.cancelled}</span><span>Canceladas</span></div>` : ''}
                     </div>
-                    <p class="summary-text">${summaryText}</p>
+                    <div class="summary-text">${summaryText}</div>
                     ${blockers.length > 0 ? `
                         <div class="blockers-section">
                             <div class="blockers-title">🚫 STOPPERS - Requieren atención inmediata</div>
@@ -679,18 +573,38 @@
                                 const project = PROJECTS.find(p => p.key === issue.key.split('-')[0]);
                                 const statusName = issue.fields.status?.name || '';
                                 const dueStatus = getDueDateStatus(issue.fields.duedate, statusName);
-                                return `
-                                    <div class="blocker-item">
-                                        <div class="blocker-info">
-                                            <a href="${JIRA_BASE_URL}/browse/${issue.key}" target="_blank" class="blocker-title">${issue.fields.summary}</a>
-                                            <div class="blocker-meta">${issue.key} • ${project?.name || ''} • ${statusName}${issue.fields.assignee ? ' • ' + issue.fields.assignee.displayName : ''}</div>
-                                        </div>
-                                        ${issue.fields.duedate ? `<span class="blocker-deadline ${dueStatus.class}">${dueStatus.text}${formatDate(issue.fields.duedate)}</span>` : ''}
-                                    </div>
-                                `;
+                                return `<div class="blocker-item"><div class="blocker-info"><a href="${JIRA_BASE_URL}/browse/${issue.key}" target="_blank" class="blocker-title">${issue.fields.summary}</a><div class="blocker-meta">${issue.key} • ${project?.name || ''} • ${statusName}${issue.fields.assignee ? ' • ' + issue.fields.assignee.displayName : ''}</div></div>${issue.fields.duedate ? `<span class="blocker-deadline ${dueStatus.class}">${dueStatus.text}${formatDate(issue.fields.duedate)}</span>` : ''}</div>`;
                             }).join('')}
                         </div>
                     ` : ''}
+                </div>
+            `;
+        }
+        
+        function renderSecondaryFilters(hasFilters) {
+            if (state.epics.length === 0 && state.users.length === 0) return '';
+            
+            return `
+                <div class="secondary-filters">
+                    <div class="filter-row">
+                        ${state.epics.length > 0 ? `
+                            <div class="filter-group">
+                                <div class="filter-group-title">Épicas</div>
+                                <div class="filter-tags">
+                                    ${state.epics.slice(0, 10).map(epic => `<span class="filter-tag ${state.filterEpic === epic ? 'active' : ''}" data-epic="${epic}">${truncate(epic, 25)}</span>`).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${state.users.length > 0 ? `
+                            <div class="filter-group">
+                                <div class="filter-group-title">Asignados</div>
+                                <div class="filter-tags">
+                                    ${state.users.slice(0, 10).map(user => `<span class="filter-tag ${state.filterUser === user ? 'active' : ''}" data-user="${user}">${user.split(' ')[0]}</span>`).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${hasFilters ? `<span class="clear-filters" id="clearFilters">✕ Limpiar filtros</span>` : ''}
+                    </div>
                 </div>
             `;
         }
@@ -699,24 +613,15 @@
             const status = issue.fields.status?.name || 'Sin estado';
             const project = PROJECTS.find(p => p.key === issue.key.split('-')[0]);
             const dueStatus = getDueDateStatus(issue.fields.duedate, status);
+            const epic = issue.fields.parent?.fields?.summary;
             
-            // Extraer descripción (API v3 usa formato ADF)
             let description = '';
             if (issue.fields.description) {
-                const rawDesc = extractTextFromADF(issue.fields.description);
-                description = truncate(rawDesc, 140);
+                description = truncate(extractTextFromADF(issue.fields.description), 140);
             }
             
-            // Extraer comentarios (API v3 usa formato ADF) - solo el último comentario
-            let commentsSummary = '';
             const comments = issue.fields.comment?.comments || [];
-            if (comments.length > 0) {
-                const lastComment = comments[comments.length - 1];
-                if (lastComment && lastComment.body) {
-                    const rawComment = extractTextFromADF(lastComment.body);
-                    commentsSummary = truncate(rawComment, 140);
-                }
-            }
+            const commentsSummary = getRelevantComment(comments);
             
             return `
                 <div class="changelog-entry">
@@ -727,12 +632,13 @@
                         <div class="entry-badges">
                             <span class="badge status-${getStatusClass(status)}">${status}</span>
                             ${project ? `<span class="badge badge-project">${project.name}</span>` : ''}
+                            ${epic ? `<span class="badge badge-epic">${truncate(epic, 20)}</span>` : ''}
                             <a href="${JIRA_BASE_URL}/browse/${issue.key}" target="_blank" class="issue-key">${issue.key}</a>
                         </div>
                         <div class="entry-meta">
-                            ${issue.fields.resolutiondate ? `<span>✅ Completada: ${formatDate(issue.fields.resolutiondate)}</span>` : ''}
-                            ${issue.fields.duedate ? `<span class="${dueStatus.class}">${dueStatus.text}Entrega: ${formatDate(issue.fields.duedate)}</span>` : ''}
-                            <span>🕐 Actualizada: ${formatDate(issue.fields.updated)}</span>
+                            ${issue.fields.resolutiondate ? `<span>✅ ${formatDate(issue.fields.resolutiondate)}</span>` : ''}
+                            ${issue.fields.duedate ? `<span class="${dueStatus.class}">${dueStatus.text}${formatDate(issue.fields.duedate)}</span>` : ''}
+                            <span>🕐 ${formatDate(issue.fields.updated)}</span>
                             <span>👤 ${issue.fields.assignee?.displayName || 'Sin asignar'}</span>
                         </div>
                         ${commentsSummary ? `<div class="entry-comments">💬 ${commentsSummary}</div>` : ''}
@@ -759,6 +665,7 @@
         }
         
         function attachMainEvents() {
+            // Filtro de proyectos
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     state.selectedProject = btn.dataset.project;
@@ -766,6 +673,46 @@
                 });
             });
             
+            // Filtros de estado (cards de colores)
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const status = card.dataset.status;
+                    state.filterStatus = state.filterStatus === status ? null : status;
+                    applyFilters();
+                    render();
+                });
+            });
+            
+            // Filtros de épicas
+            document.querySelectorAll('[data-epic]').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    const epic = tag.dataset.epic;
+                    state.filterEpic = state.filterEpic === epic ? null : epic;
+                    applyFilters();
+                    render();
+                });
+            });
+            
+            // Filtros de usuarios
+            document.querySelectorAll('[data-user]').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    const user = tag.dataset.user;
+                    state.filterUser = state.filterUser === user ? null : user;
+                    applyFilters();
+                    render();
+                });
+            });
+            
+            // Limpiar filtros
+            const clearBtn = document.getElementById('clearFilters');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    clearFilters();
+                    render();
+                });
+            }
+            
+            // Reset
             const resetBtn = document.getElementById('resetBtn');
             if (resetBtn) {
                 resetBtn.addEventListener('click', () => {
@@ -773,17 +720,17 @@
                     safeStorage('remove', 'jira_token');
                     state.email = null;
                     state.token = null;
+                    state.allIssues = [];
                     state.issues = [];
                     state.error = null;
                     render();
                 });
             }
             
+            // Cargar más
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             if (loadMoreBtn) {
-                loadMoreBtn.addEventListener('click', () => {
-                    fetchIssues(true);
-                });
+                loadMoreBtn.addEventListener('click', () => fetchIssues(true));
             }
         }
         
@@ -793,10 +740,7 @@
         state.email = safeStorage('get', 'jira_email');
         state.token = safeStorage('get', 'jira_token');
         render();
-        
-        if (state.email && state.token) {
-            fetchIssues();
-        }
+        if (state.email && state.token) fetchIssues();
     </script>
 </body>
 </html>
