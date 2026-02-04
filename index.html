@@ -148,14 +148,50 @@ function cStats(){const s={completed:0,progress:0,blocked:0,todo:0,qa:0,cancelle
 
 function genSum(s){
 const t=S.all.length;if(!t)return'';
-const pn=S.proj==='ALL'?'TODOS':PROJECTS.find(p=>p.k===S.proj)?.n?.toUpperCase()||S.proj;
-let r=`📊 RESUMEN: ${pn}\n\nTotal: ${t} tareas\n\n`;
-if(s.completed)r+=`✅ ${s.completed} completadas (${Math.round(s.completed/t*100)}%)\n`;
-if(s.progress)r+=`🔄 ${s.progress} en progreso\n`;
-if(s.qa)r+=`🧪 ${s.qa} en QA\n`;
-if(s.blocked)r+=`🚫 ${s.blocked} bloqueadas\n`;
-if(s.todo)r+=`⏳ ${s.todo} pendientes\n`;
-return r;
+const pn=S.proj==='ALL'?'TODOS LOS PROYECTOS':PROJECTS.find(p=>p.k===S.proj)?.n?.toUpperCase()||S.proj;
+
+// Calcular métricas adicionales
+const now=new Date();now.setHours(0,0,0,0);
+const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-7);
+
+const overdue=S.all.filter(i=>{if(!i.fields.duedate)return false;const d=new Date(i.fields.duedate);return d<now&&!IGNORE.includes((i.fields.status?.name||'').toUpperCase())}).length;
+const recentDone=S.all.filter(i=>{if((i.fields.status?.name||'').toUpperCase()!=='COMPLETADA'||!i.fields.resolutiondate)return false;return new Date(i.fields.resolutiondate)>=weekAgo}).length;
+const recentUpdated=S.all.filter(i=>i.fields.updated&&new Date(i.fields.updated)>=weekAgo).length;
+const blockers=S.all.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
+
+let r=`📊 RESUMEN DE ${pn}\n\nEste changelog contiene ${t} tareas desde el inicio del proyecto.\n\n`;
+
+r+=`📈 ESTADO ACTUAL:\n`;
+if(s.completed)r+=`• ✅ ${s.completed} completadas (${Math.round(s.completed/t*100)}%)\n`;
+if(s.progress)r+=`• 🔄 ${s.progress} en progreso\n`;
+if(s.qa)r+=`• 🧪 ${s.qa} en QA/testing\n`;
+if(s.blocked)r+=`• 🚫 ${s.blocked} bloqueadas - requieren atención\n`;
+if(s.todo)r+=`• ⏳ ${s.todo} pendientes por iniciar\n`;
+if(s.cancelled)r+=`• ❌ ${s.cancelled} canceladas\n`;
+
+if(recentDone||recentUpdated||overdue){
+r+=`\n📅 ACTIVIDAD ÚLTIMA SEMANA:\n`;
+if(recentDone)r+=`• ${recentDone} tareas completadas\n`;
+if(recentUpdated)r+=`• ${recentUpdated} tareas actualizadas\n`;
+if(overdue)r+=`• ⚠️ ${overdue} tareas con fecha vencida\n`;
+}
+
+if(blockers.length){
+r+=`\n🚨 STOPPERS (${blockers.length}) - Requieren atención inmediata:\n`;
+blockers.slice(0,5).forEach(b=>{
+const st=b.fields.status?.name||'';
+const assignee=b.fields.assignee?.displayName||'Sin asignar';
+r+=`• [${b.key}] ${trunc(b.fields.summary,50)} - ${st} (${assignee})\n`;
+});
+if(blockers.length>5)r+=`• ...y ${blockers.length-5} más\n`;
+}
+
+if(S.users.length){
+r+=`\n👥 TOP COLABORADORES:\n`;
+S.users.slice(0,5).forEach(u=>r+=`• ${u.n}: ${u.c} tareas\n`);
+}
+
+return r.substring(0,2400);
 }
 
 function rEntry(i){
