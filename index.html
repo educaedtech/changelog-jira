@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Changelog - Proyectos Shopify</title>
+<title>Changelog - Proyectos</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -70,8 +70,45 @@ body{font-family:'Inter',sans-serif;background:#fafafa;color:#1a1a1a;line-height
 <script>
 const JIRA='https://educaedtech.atlassian.net';
 const PROXY='https://jira-proxy.shopify-48b.workers.dev/?url=';
-const PROJECTS=[{k:'SEI',n:'Euroinnova'},{k:'SEH',n:'EducaHub'},{k:'SUM',n:'Unimiami'},{k:'SST',n:'Structuralia'},{k:'STP',n:'Temarioenpdf'},{k:'SFC',n:'Formación Continua'},{k:'SCL',n:'Centro Lengua Capman'},{k:'SED',n:'Entorno Desarrollo'},{k:'EHC',n:'EduHub Core'}];
-const BLOCKED=['PTE REQUISITOS','STANDBY','RECHAZADA - POR HACER'];
+const PROJECTS=[
+  {k:'SEI', n:'Euroinnova', links:{
+    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SEDEINN/overview',
+    Backlog:'https://educaedtech.atlassian.net/jira/software/projects/SEI/boards/4/backlog'
+  }},
+  {k:'SEH', n:'EducaHub', links:{
+    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SEEDHUB/overview',
+    Backlog:'https://educaedtech.atlassian.net/jira/software/projects/SEH/boards/10/backlog'
+  }},
+  {k:'SUM', n:'Unimiami', links:{
+    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SEDUNMI/overview',
+    Backlog:'https://educaedtech.atlassian.net/jira/software/projects/SUM/boards/11/backlog'
+  }},
+  {k:'SST', n:'Structuralia', links:{
+    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SEDSTRU/overview',
+    Backlog:'https://educaedtech.atlassian.net/jira/software/projects/SST/boards/8/backlog'
+  }},
+  {k:'STP', n:'Temarioenpdf', links:{
+    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SEDTEMP/overview',
+    Backlog:'https://educaedtech.atlassian.net/jira/software/projects/STP/boards/9/backlog'
+  }},
+  {k:'SFC', n:'Formación Continua', links:{
+    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SEDFOCO/overview',
+    Backlog:'https://educaedtech.atlassian.net/jira/software/projects/SFC/boards/6/backlog'
+  }},
+  {k:'SCL', n:'Centro Lengua Capman', links:{
+    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SCDLC/overview',
+    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SCL/boards/1416/backlog?epics=visible'
+  }},
+  {k:'SED', n:'Entorno Desarrollo', links:{
+    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SEDENT/overview',
+    Backlog:'https://educaedtech.atlassian.net/jira/software/projects/SED/boards/5/backlog'
+  }},
+  {k:'EHC', n:'EduHub Core', links:{
+    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/EHC/overview',
+    Backlog:'https://educaedtech.atlassian.net/jira/software/projects/EHC/boards/12/backlog'
+  }}
+];
+const BLOCKED=['PTE REQUISITOS'];
 const IGNORE=['COMPLETADA','CANCELADA','STANDBY','PTE REQUISITOS'];
 const AUTO=['this work item','created based on','jira form','email address:','automation','automatically','transitioned'];
 
@@ -131,7 +168,7 @@ ${!S.load&&!S.err&&S.all.length?`
 <div class="stat s-purple ${S.stat==='qa'?'active':''}" data-s="qa"><span>${st.qa}</span><span>En QA</span></div>
 <div class="stat s-red ${S.stat==='blocked'?'active':''}" data-s="blocked"><span>${st.blocked}</span><span>Bloqueadas</span></div>
 <div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
-</div><div class="summary">${genSum(st)}</div>${genStoppers()}</div>
+</div>${genProjectLinks()}<div class="summary">${genSum(st)}</div>${genStoppers()}</div>
 <div class="fbox"><div class="frow">
 <div class="fgrp"><div class="fgrp-title">Épicas (${S.epics.length})</div><div class="tags">${S.epics.map(e=>`<span class="tag ${S.epic===e.n?'active':''}" data-e="${e.n}">${trunc(e.n,20)} (${e.c})</span>`).join('')||'Sin épicas'}</div></div>
 <div class="fgrp"><div class="fgrp-title">Usuarios (${S.users.length})</div><div class="tags">${S.users.map(u=>`<span class="tag ${S.user===u.n?'active':''}" data-u="${u.n}">${u.n.split(' ')[0]} (${u.c})</span>`).join('')||'Sin usuarios'}</div></div>
@@ -145,6 +182,24 @@ ${tp>1?`<div class="pag"><button id="prev" ${S.pg===0?'disabled':''}>← Anterio
 }
 
 function cStats(){const s={completed:0,progress:0,blocked:0,todo:0,qa:0,cancelled:0};S.all.forEach(i=>s[sCat(i.fields.status?.name)]++);return s}
+
+function genProjectLinks(){
+if(S.proj==='ALL')return'';
+const proj=PROJECTS.find(p=>p.k===S.proj);
+if(!proj||!proj.links)return'';
+
+const L=proj.links;
+let h=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">`;
+
+if(L.Confluence)h+=`<a href="${L.Confluence}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">📚</span>Confluence</a>`;
+
+if(L.Figma)h+=`<a href="${L.Figma}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">🎨</span>Figma</a>`;
+
+if(L.Backlog)h+=`<a href="${L.Backlog}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">📋</span>Backlog</a>`;
+
+h+=`</div>`;
+return h;
+}
 
 function genSum(s){
 const t=S.all.length;if(!t)return'';
