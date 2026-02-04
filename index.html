@@ -428,7 +428,7 @@
                 
                 const jql = `${projectFilter} ORDER BY created DESC`;
                 const apiUrl = `${JIRA_BASE_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=${state.pageSize}&fields=summary,status,created,updated,resolutiondate,assignee,comment,duedate`;
-                const fetchUrl = CORS_PROXY + encodeURIComponent(apiUrl);
+                const fetchUrl = CORS_PROXY + btoa(apiUrl);
                 
                 const response = await fetch(fetchUrl, {
                     method: 'GET',
