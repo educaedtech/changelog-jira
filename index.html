@@ -134,7 +134,7 @@ try{
 const pf=S.proj==='ALL'?`project IN ("${PROJECTS.map(p=>p.k).join('","')}")`:`project="${S.proj}"`;
 const jql=`${pf} ORDER BY updated DESC`;let npt=null,all=[];
 do{
-let url=`${JIRA}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent`;
+let url=`${JIRA}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent,issuetype`;
 if(npt)url+=`&nextPageToken=${encodeURIComponent(npt)}`;
 const res=await fetch(PROXY+encodeURIComponent(url),{headers:{'Accept':'application/json'}});
 if(!res.ok)throw new Error(`Error ${res.status}`);
@@ -142,7 +142,7 @@ const data=await res.json();all=[...all,...(data.issues||[])];
 if(!S.tot&&data.total)S.tot=data.total;S.prog=all.length;render();
 npt=data.nextPageToken;if(npt)await new Promise(r=>setTimeout(r,50));
 }while(npt);
-S.all=all;S.flt=[...all];extFlt();
+S.all=all.filter(i=>(i.fields.issuetype?.name||'').toLowerCase()!=='epic');S.flt=[...S.all];extFlt();
 }catch(e){S.err=e.message}
 S.load=false;render();
 }
