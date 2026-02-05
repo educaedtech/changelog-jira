@@ -255,11 +255,11 @@ function rEntry(i){
 const st=i.fields.status?.name||'',pr=PROJECTS.find(p=>p.k===i.key.split('-')[0]),ds=dueS(i.fields.duedate,st);
 const ep=i.fields.parent?.fields?.summary,desc=i.fields.description?trunc(adf(i.fields.description),120):'';
 const cm=getCmt(i.fields.comment?.comments);
-return`<div class="entry"><div class="edate">${fmt(i.fields.created)}</div><div class="econtent">
+return`<div class="entry"><div class="edate">${fmt(i.fields.updated)}</div><div class="econtent">
 <a href="${JIRA}/browse/${i.key}" target="_blank" class="etitle">${i.fields.summary}</a>
 ${desc?`<p class="edesc">${desc}</p>`:''}
 <div class="badges"><span class="badge ${sBadge(st)}">${st}</span>${pr?`<span class="badge b-proj">${pr.n}</span>`:''}${ep?`<span class="badge b-epic">${trunc(ep,18)}</span>`:''}<a href="${JIRA}/browse/${i.key}" target="_blank" class="ikey">${i.key}</a></div>
-<div class="emeta">${i.fields.duedate?`<span class="${ds.c}">${ds.t}${fmt(i.fields.duedate)}</span>`:''}<span>🕐 ${fmt(i.fields.updated)}</span><span>👤 ${i.fields.assignee?.displayName||'Sin asignar'}</span></div>
+<div class="emeta">${i.fields.duedate?`<span class="${ds.c}">${ds.t}${fmt(i.fields.duedate)}</span>`:''}<span>📅 Creado: ${fmt(i.fields.created)}</span><span>👤 ${i.fields.assignee?.displayName||'Sin asignar'}</span></div>
 ${cm?`<div class="cmt">💬 ${cm}</div>`:''}
 </div></div>`;
 }
