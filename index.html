@@ -153,7 +153,7 @@ function html(){
 const st=cStats(),hasF=S.stat||S.epic||S.user;
 const si=S.pg*50,ei=si+50,di=S.flt.slice(si,ei),tp=Math.ceil(S.flt.length/50);
 return`
-<header class="header"><div class="hc"><h1>🔄 Changelog</h1><p>Proyectos Shopify - EducaEdtech</p></div></header>
+<header class="header"><div class="hc"><h1>🔄 Changelog</h1><p>Proyectos - EducaEdtech</p></div></header>
 <nav class="filters"><div class="fc">
 <button class="btn ${S.proj==='ALL'?'active':''}" data-p="ALL">Todos</button>
 ${PROJECTS.map(p=>`<button class="btn ${S.proj===p.k?'active':''}" data-p="${p.k}">${p.n}</button>`).join('')}
