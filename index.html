@@ -185,11 +185,11 @@ ${!S.load&&!S.err&&S.all.length?`
 <div class="stat s-blue ${S.stat==='progress'?'active':''}" data-s="progress"><span>${st.progress}</span><span>En Progreso</span></div>
 <div class="stat s-purple ${S.stat==='qa'?'active':''}" data-s="qa"><span>${st.qa}</span><span>En QA</span></div>
 <div class="stat s-red ${S.stat==='blocked'?'active':''}" data-s="blocked"><span>${st.blocked}</span><span>Bloqueadas</span></div>
+<div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
 <div class="stat s-orange ${S.stat==='cancelled'?'active':''}" data-s="cancelled">
   <span>${st.cancelled}</span>
   <span>Canceladas</span>
 </div>
-<div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
 </div>${genProjectLinks()}<div class="summary">${genSum(st)}</div>${genStoppers()}</div>
 <div class="fbox"><div class="frow">
 <div class="fgrp"><div class="fgrp-title">Épicas (${S.epics.length})</div><div class="tags">${S.epics.map(e=>`<span class="tag ${S.epic===e.n?'active':''}" data-e="${e.n}">${trunc(e.n,20)} (${e.c})</span>`).join('')||'Sin épicas'}</div></div>
