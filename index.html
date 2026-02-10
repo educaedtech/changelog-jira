@@ -28,7 +28,8 @@ body{font-family:'Inter',sans-serif;background:#fafafa;color:#1a1a1a;line-height
 .s-red{background:#fee2e2;color:#dc2626}
 .s-gray{background:#f3f4f6;color:#6b7280}
 .s-purple{background:#ede9fe;color:#7c3aed}
-.s-orange{background:#ffedd5;color:#ea580c;}
+.s-orange{background:#ffedd5;color:#ea580c}
+.s-yellow{background:#fef9c3;color:#ca8a04}
 .summary{font-size:14px;background:#f3f4f6;padding:16px;border-radius:8px;white-space:pre-line}
 .fbox{background:#f3f4f6;border-radius:8px;padding:16px;margin-bottom:24px}
 .frow{display:flex;gap:24px;flex-wrap:wrap}
@@ -128,6 +129,7 @@ const sCat=s=>{
   if(x==='EN PROGRESO')return'progress';
   if(x.includes('QA')||x.includes('APROBADO'))return'qa';
   if(BLOCKED.includes(x))return'blocked';
+  if(x==='POR HACER'||x.includes('RECHAZADA'))return'rejected';
   return'todo';
 };
 
@@ -138,6 +140,7 @@ const sBadge=s=>{
   if(x==='EN PROGRESO')return's-blue';
   if(x.includes('QA')||x.includes('APROBADO'))return's-purple';
   if(BLOCKED.includes(x))return's-red';
+  if(x==='POR HACER'||x.includes('RECHAZADA'))return's-yellow';
   return's-gray';
 };
 const dueS=(d,s)=>{if(!d)return{c:'',t:''};const due=new Date(d),now=new Date();now.setHours(0,0,0,0);const diff=Math.ceil((due-now)/864e5);if(diff<0&&!IGNORE.includes((s||'').toUpperCase()))return{c:'overdue',t:'⚠️ Vencida: '};if(diff>=0&&diff<=3)return{c:'',t:'⏰ '};return{c:'',t:'📅 '}};
@@ -186,7 +189,9 @@ ${!S.load&&!S.err&&S.all.length?`
 <div class="stat s-purple ${S.stat==='qa'?'active':''}" data-s="qa"><span>${st.qa}</span><span>En QA</span></div>
 <div class="stat s-red ${S.stat==='blocked'?'active':''}" data-s="blocked"><span>${st.blocked}</span><span>Bloqueadas</span></div>
 <div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
+<div class="stat s-yellow ${S.stat==='rejected'?'active':''}" data-s="rejected"><span>${st.rejected}</span><span>Por hacer</span></div>
 <div class="stat s-orange ${S.stat==='cancelled'?'active':''}" data-s="cancelled"><span>${st.cancelled}</span><span>Canceladas</span></div>
+</div>
 ${genProjectLinks()}
 ${genHealthSummary(st)}
 ${genSummaryTable(st)}
@@ -205,7 +210,7 @@ ${tp>1?`<div class="pag"><button id="prev" ${S.pg===0?'disabled':''}>← Anterio
 }
 
 function cStats(){
-  const s={completed:0,progress:0,blocked:0,todo:0,qa:0,cancelled:0};
+  const s={completed:0,progress:0,blocked:0,todo:0,qa:0,cancelled:0,rejected:0};
   S.flt.forEach(i=>s[sCat(i.fields.status?.name)]++);
   return s;
 }
@@ -233,14 +238,13 @@ function genSummaryTable(s){
       ${row('✅','Completadas', s.completed)}
       ${row('🔄','En progreso', s.progress)}
       ${row('🧪','En QA', s.qa)}
-      ${row('🚫','Stopper', s.blocked)}
+      ${row('🚫','Bloqueadas', s.blocked)}
       ${row('📋','Pendientes', s.todo)}
+      ${row('🔁','Por hacer', s.rejected)}
       ${row('🟠','Canceladas', s.cancelled)}
     </tbody>
   </table>`;
 }
-
-
 
 function genProjectLinks(){
 if(S.proj==='ALL')return'';
@@ -264,15 +268,21 @@ function genHealthSummary(s){
   const t = S.flt.length;
   if(!t) return '';
 
-  const pct = Math.round(s.completed / t * 100);
-  let status = '🟢 Salud óptima';
-  let color = '#16a34a';
-
-  if (s.blocked > 0 || pct < 40) {
-    status = '🔴 Riesgo alto';
+  // Nueva lógica de salud según especificaciones
+  let status, color;
+  
+  if(s.blocked >= 5 || s.todo >= 5){
+    status = '🔴 Salud - Riesgo alto';
     color = '#dc2626';
-  } else if (pct < 70) {
-    status = '🟡 Progreso estable';
+  } else if(s.blocked >= 3 || s.todo >= 3){
+    status = '🟠 Salud - Progreso con riesgos';
+    color = '#ea580c';
+  } else if(s.blocked === 0){
+    status = '🟢 Salud - Excelente';
+    color = '#16a34a';
+  } else {
+    // 1-2 bloqueadas y menos de 3 pendientes
+    status = '🟠 Salud - Progreso con riesgos';
     color = '#ea580c';
   }
 
@@ -281,33 +291,38 @@ function genHealthSummary(s){
       ? 'Todos los proyectos'
       : PROJECTS.find(p => p.k === S.proj)?.n || S.proj;
 
-  let txt = `
-<strong>${status} – ${projName}</strong><br>
-${pct}% de las tareas están completadas (${s.completed} de ${t}).`;
+  const pct = Math.round(s.completed / t * 100);
+
+  let txt = `<strong>${status} – ${projName}</strong><br>`;
+  txt += `${pct}% de las tareas están completadas (${s.completed} de ${t}).`;
 
   if (s.blocked)
-    txt += `<br>🚫 <strong>${s.blocked} stoppers activos</strong> requieren atención inmediata.`;
+    txt += `<br>🚫 <strong>${s.blocked} bloqueadas</strong> requieren atención.`;
 
   if (s.progress)
     txt += `<br>🔄 ${s.progress} tareas en progreso.`;
 
   if (s.todo)
-    txt += `<br>📋 ${s.todo} tareas pendientes de iniciar.`;
+    txt += `<br>📋 ${s.todo} tareas pendientes.`;
+
+  if (s.rejected)
+    txt += `<br>🔁 ${s.rejected} por hacer/rechazadas.`;
 
   return `
-  <div style="
-    background:#fff;
-    border-left:4px solid ${color};
-    padding:16px;
-    border-radius:8px;
-    margin-bottom:16px;
-    font-size:14px;
-    line-height:1.5
-  ">
-    ${txt}
-  </div>`;
+<div style="
+  width:100%;
+  box-sizing:border-box;
+  background:#fff;
+  border-left:6px solid ${color};
+  padding:16px 20px;
+  border-radius:8px;
+  margin:16px 0;
+  font-size:14px;
+  line-height:1.6
+">
+  ${txt}
+</div>`;
 }
-
 
 function genSum(s){
   const t = S.flt.length;
@@ -349,16 +364,16 @@ function genSum(s){
   if(recentDone) r += `Esta semana se completaron ${recentDone}. `;
   if(overdue) r += `⚠️ ${overdue} con fecha vencida. `;
 
-  if(s.progress || s.qa){
+  if(s.progress || s.qa || s.blocked || s.todo || s.rejected){
     r += `\n\n📌 Estado actual:\n`;
-    if(s.blocked) r += `• 🚫 ${s.blocked} stopper activos\n`;
+    if(s.blocked) r += `• 🚫 ${s.blocked} bloqueadas\n`;
     if(s.progress) r += `• 🔄 ${s.progress} en progreso\n`;
     if(s.todo) r += `• 📋 ${s.todo} pendientes\n`;
+    if(s.rejected) r += `• 🔁 ${s.rejected} por hacer/rechazadas\n`;
   }
 
   return r;
 }
-
 
 function genStoppers(){
 const blockers=S.flt.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
