@@ -185,17 +185,16 @@ ${S.load?`<div class="loading"><div class="spin"></div><p style="font-size:20px;
 ${!S.load&&!S.err&&S.all.length?`
 <div class="box"><div class="stats">
 <div class="stat s-green ${S.stat==='completed'?'active':''}" data-s="completed"><span>${st.completed}</span><span>Completadas</span></div>
+<div class="stat s-yellow ${S.stat==='rejected'?'active':''}" data-s="rejected"><span>${st.rejected}</span><span>Por hacer</span></div>
 <div class="stat s-blue ${S.stat==='progress'?'active':''}" data-s="progress"><span>${st.progress}</span><span>En Progreso</span></div>
 <div class="stat s-purple ${S.stat==='qa'?'active':''}" data-s="qa"><span>${st.qa}</span><span>En QA</span></div>
 <div class="stat s-red ${S.stat==='blocked'?'active':''}" data-s="blocked"><span>${st.blocked}</span><span>Bloqueadas</span></div>
 <div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
-<div class="stat s-yellow ${S.stat==='rejected'?'active':''}" data-s="rejected"><span>${st.rejected}</span><span>Por hacer</span></div>
 <div class="stat s-orange ${S.stat==='cancelled'?'active':''}" data-s="cancelled"><span>${st.cancelled}</span><span>Canceladas</span></div>
 </div>
 ${genProjectLinks()}
 ${genHealthSummary(st)}
 ${genSummaryTable(st)}
-<div class="summary">${genSum(st)}</div>
 ${genStoppers()}</div>
 <div class="fbox"><div class="frow">
 <div class="fgrp"><div class="fgrp-title">Épicas (${S.epics.length})</div><div class="tags">${S.epics.map(e=>`<span class="tag ${S.epic===e.n?'active':''}" data-e="${e.n}">${trunc(e.n,20)} (${e.c})</span>`).join('')||'Sin épicas'}</div></div>
@@ -236,11 +235,11 @@ function genSummaryTable(s){
     </thead>
     <tbody>
       ${row('✅','Completadas', s.completed)}
+      ${row('🔁','Por hacer', s.rejected)}
       ${row('🔄','En progreso', s.progress)}
       ${row('🧪','En QA', s.qa)}
       ${row('🚫','Bloqueadas', s.blocked)}
       ${row('📋','Pendientes', s.todo)}
-      ${row('🔁','Por hacer', s.rejected)}
       ${row('🟠','Canceladas', s.cancelled)}
     </tbody>
   </table>`;
@@ -299,14 +298,14 @@ function genHealthSummary(s){
   if (s.blocked)
     txt += `<br>🚫 <strong>${s.blocked} bloqueadas</strong> requieren atención.`;
 
+  if (s.rejected)
+    txt += `<br>🔁 ${s.rejected} por hacer/rechazadas.`;
+
   if (s.progress)
     txt += `<br>🔄 ${s.progress} tareas en progreso.`;
 
   if (s.todo)
     txt += `<br>📋 ${s.todo} tareas pendientes.`;
-
-  if (s.rejected)
-    txt += `<br>🔁 ${s.rejected} por hacer/rechazadas.`;
 
   return `
 <div style="
