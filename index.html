@@ -191,7 +191,6 @@ ${genProjectLinks()}
 ${genHealthSummary(st)}
 ${genSummaryTable(st)}
 <div class="summary">${genSum(st)}</div>
-${genStoppers()}
 ${genStoppers()}</div>
 <div class="fbox"><div class="frow">
 <div class="fgrp"><div class="fgrp-title">Épicas (${S.epics.length})</div><div class="tags">${S.epics.map(e=>`<span class="tag ${S.epic===e.n?'active':''}" data-e="${e.n}">${trunc(e.n,20)} (${e.c})</span>`).join('')||'Sin épicas'}</div></div>
@@ -311,36 +310,55 @@ ${pct}% de las tareas están completadas (${s.completed} de ${t}).`;
 
 
 function genSum(s){
-const t=S.flt.length;if(!t)return'';
-const pn=S.proj==='ALL'?'TODOS LOS PROYECTOS':PROJECTS.find(p=>p.k===S.proj)?.n?.toUpperCase()||S.proj;
+  const t = S.flt.length;
+  if(!t) return '';
 
-const now=new Date();now.setHours(0,0,0,0);
-const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-7);
+  const pn =
+    S.proj === 'ALL'
+      ? 'TODOS LOS PROYECTOS'
+      : PROJECTS.find(p => p.k === S.proj)?.n?.toUpperCase() || S.proj;
 
-const overdue=S.flt.filter(i=>{if(!i.fields.duedate)return false;const d=new Date(i.fields.duedate);return d<now&&!IGNORE.includes((i.fields.status?.name||'').toUpperCase())}).length;
-const recentDone=S.flt.filter(i=>{if((i.fields.status?.name||'').toUpperCase()!=='COMPLETADA'||!i.fields.resolutiondate)return false;return new Date(i.fields.resolutiondate)>=weekAgo}).length;
-const inProgress=S.flt.filter(i=>(i.fields.status?.name||'').toUpperCase()==='EN PROGRESO');
+  const now = new Date();
+  now.setHours(0,0,0,0);
 
-let r=`📊 RESUMEN DE ${pn}\n\n`;
-r+=`Historial completo: ${t} tareas. `;
-const pc=Math.round(s.completed/t*100);
-const pcan=Math.round(s.cancelled/t*100);
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
 
-r+=`Completadas: ${s.completed} (${pc}%). `;
-if(s.cancelled){
-  r+=`Canceladas: ${s.cancelled} (${pcan}%). `;
+  const overdue = S.flt.filter(i=>{
+    if(!i.fields.duedate) return false;
+    const d = new Date(i.fields.duedate);
+    return d < now && !IGNORE.includes((i.fields.status?.name||'').toUpperCase());
+  }).length;
+
+  const recentDone = S.flt.filter(i=>{
+    if((i.fields.status?.name||'').toUpperCase() !== 'COMPLETADA' || !i.fields.resolutiondate) return false;
+    return new Date(i.fields.resolutiondate) >= weekAgo;
+  }).length;
+
+  let r = `📊 RESUMEN DE ${pn}\n\n`;
+  r += `Historial completo: ${t} tareas. `;
+
+  const pc = Math.round(s.completed / t * 100);
+  r += `Completadas: ${s.completed} (${pc}%). `;
+
+  if(s.cancelled){
+    const pcan = Math.round(s.cancelled / t * 100);
+    r += `Canceladas: ${s.cancelled} (${pcan}%). `;
+  }
+
+  if(recentDone) r += `Esta semana se completaron ${recentDone}. `;
+  if(overdue) r += `⚠️ ${overdue} con fecha vencida. `;
+
+  if(s.progress || s.qa){
+    r += `\n\n📌 Estado actual:\n`;
+    if(s.blocked) r += `• 🚫 ${s.blocked} stopper activos\n`;
+    if(s.progress) r += `• 🔄 ${s.progress} en progreso\n`;
+    if(s.todo) r += `• 📋 ${s.todo} pendientes\n`;
+  }
+
+  return r;
 }
-if(recentDone)r+=`Esta semana se completaron ${recentDone}. `;
-if(overdue)r+=`⚠️ ${overdue} con fecha vencida. `;
 
-if(s.progress||s.qa){
-r += `\n\n📌 Estado actual:\n`;
-if(s.blocked) r += `• 🚫 ${s.blocked} stopper activos\n`;
-if(s.progress) r += `• 🔄 ${s.progress} en progreso\n`;
-if(s.todo) r += `• 📋 ${s.todo} pendientes\n`;
-
-return r;
-}
 
 function genStoppers(){
 const blockers=S.flt.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
