@@ -279,19 +279,16 @@ if(recentDone)r+=`Esta semana se completaron ${recentDone}. `;
 if(overdue)r+=`⚠️ ${overdue} con fecha vencida. `;
 
 if(s.progress||s.qa){
-r+=`\n\n🔄 EN CURSO (${s.progress+s.qa}):\n`;
-inProgress.slice(0,5).forEach(i=>{
-const assignee=i.fields.assignee?.displayName?.split(' ')[0]||'--';
-r+=`• ${trunc(i.fields.summary,55)} (${assignee})\n`;
-});
-if(inProgress.length>5)r+=`• +${inProgress.length-5} más en progreso\n`;
-}
+r += `\n\n📌 Estado actual:\n`;
+if(s.blocked) r += `• 🚫 ${s.blocked} stopper activos\n`;
+if(s.progress) r += `• 🔄 ${s.progress} en progreso\n`;
+if(s.todo) r += `• 📋 ${s.todo} pendientes\n`;
 
 return r;
 }
 
 function genStoppers(){
-const blockers=S.all.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
+const blockers=S.flt.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
 if(!blockers.length)return'';
 
 let h=`<div style="margin-top:16px;padding:16px;background:#fee2e2;border-radius:8px;border:1px solid #fecaca">`;
