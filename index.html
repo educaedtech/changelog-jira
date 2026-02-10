@@ -120,8 +120,25 @@ const adf=a=>{if(!a)return'';if(typeof a==='string')return a;let t='';const r=n=
 const isAuto=t=>!t||AUTO.some(f=>t.toLowerCase().includes(f));
 const getCmt=c=>{if(!c||!c.length)return'';for(let i=c.length-1;i>=0;i--){const t=adf(c[i]?.body);if(t&&!isAuto(t)&&t.length>10)return trunc(t,200)}return''};
 
-const sCat=s=>{const x=(s||'').toUpperCase();if(x==='COMPLETADA')return'completed';if(x==='EN PROGRESO')return'progress';if(x.includes('QA')||x.includes('APROBADO'))return'qa';if(BLOCKED.includes(x))return'blocked';if(x==='CANCELADA')return'cancelled';return'todo'};
-const sBadge=s=>{const x=(s||'').toUpperCase();if(x==='COMPLETADA')return's-green';if(x==='EN PROGRESO')return's-blue';if(x.includes('QA')||x.includes('APROBADO'))return's-purple';if(BLOCKED.includes(x))return's-red';return's-gray'};
+const sCat=s=>{
+  const x=(s||'').toUpperCase();
+  if(x==='COMPLETADA')return'completed';
+  if(x==='CANCELADA')return'cancelled';
+  if(x==='EN PROGRESO')return'progress';
+  if(x.includes('QA')||x.includes('APROBADO'))return'qa';
+  if(BLOCKED.includes(x))return'blocked';
+  return'todo';
+};
+
+const sBadge=s=>{
+  const x=(s||'').toUpperCase();
+  if(x==='COMPLETADA')return's-green';
+  if(x==='CANCELADA')return's-gray';
+  if(x==='EN PROGRESO')return's-blue';
+  if(x.includes('QA')||x.includes('APROBADO'))return's-purple';
+  if(BLOCKED.includes(x))return's-red';
+  return's-gray';
+};
 const dueS=(d,s)=>{if(!d)return{c:'',t:''};const due=new Date(d),now=new Date();now.setHours(0,0,0,0);const diff=Math.ceil((due-now)/864e5);if(diff<0&&!IGNORE.includes((s||'').toUpperCase()))return{c:'overdue',t:'⚠️ Vencida: '};if(diff>=0&&diff<=3)return{c:'',t:'⏰ '};return{c:'',t:'📅 '}};
 
 const extFlt=()=>{const em=new Map(),um=new Map();S.all.forEach(i=>{const e=i.fields.parent?.fields?.summary;if(e)em.set(e,(em.get(e)||0)+1);const u=i.fields.assignee?.displayName;if(u)um.set(u,(um.get(u)||0)+1)});S.epics=[...em].sort((a,b)=>b[1]-a[1]).map(e=>({n:e[0],c:e[1]}));S.users=[...um].sort((a,b)=>b[1]-a[1]).map(u=>({n:u[0],c:u[1]}))};
@@ -167,6 +184,10 @@ ${!S.load&&!S.err&&S.all.length?`
 <div class="stat s-blue ${S.stat==='progress'?'active':''}" data-s="progress"><span>${st.progress}</span><span>En Progreso</span></div>
 <div class="stat s-purple ${S.stat==='qa'?'active':''}" data-s="qa"><span>${st.qa}</span><span>En QA</span></div>
 <div class="stat s-red ${S.stat==='blocked'?'active':''}" data-s="blocked"><span>${st.blocked}</span><span>Bloqueadas</span></div>
+<div class="stat s-gray ${S.stat==='cancelled'?'active':''}" data-s="cancelled">
+  <span>${st.cancelled}</span>
+  <span>Canceladas</span>
+</div>
 <div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
 </div>${genProjectLinks()}<div class="summary">${genSum(st)}</div>${genStoppers()}</div>
 <div class="fbox"><div class="frow">
@@ -214,7 +235,13 @@ const inProgress=S.all.filter(i=>(i.fields.status?.name||'').toUpperCase()==='EN
 
 let r=`📊 RESUMEN DE ${pn}\n\n`;
 r+=`Historial completo: ${t} tareas. `;
-r+=`Completadas: ${s.completed} (${Math.round(s.completed/t*100)}%). `;
+const pc=Math.round(s.completed/t*100);
+const pcan=Math.round(s.cancelled/t*100);
+
+r+=`Completadas: ${s.completed} (${pc}%). `;
+if(s.cancelled){
+  r+=`Canceladas: ${s.cancelled} (${pcan}%). `;
+}
 if(recentDone)r+=`Esta semana se completaron ${recentDone}. `;
 if(overdue)r+=`⚠️ ${overdue} con fecha vencida. `;
 
