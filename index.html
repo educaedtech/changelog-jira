@@ -187,7 +187,9 @@ ${!S.load&&!S.err&&S.all.length?`
 <div class="stat s-red ${S.stat==='blocked'?'active':''}" data-s="blocked"><span>${st.blocked}</span><span>Bloqueadas</span></div>
 <div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
 <div class="stat s-orange ${S.stat==='cancelled'?'active':''}" data-s="cancelled"><span>${st.cancelled}</span><span>Canceladas</span></div>
-</div>${genProjectLinks()}${genSummaryTable(st)}
+${genProjectLinks()}
+${genHealthSummary(st)}
+${genSummaryTable(st)}
 <div class="summary">${genSum(st)}</div>
 ${genStoppers()}
 ${genStoppers()}</div>
@@ -220,21 +222,25 @@ function genSummaryTable(s){
     </tr>`;
 
   return `
-  <table style="width:100%;font-size:13px;border-collapse:collapse;margin-bottom:16px">
+  <table style="width:100%;font-size:13px;border-collapse:collapse;margin:12px 0 20px">
     <thead>
-      <tr style="text-align:left;color:#6b7280">
-        <th>Estado</th><th>Cantidad</th><th>%</th>
+      <tr style="text-align:left;color:#6b7280;border-bottom:1px solid #e5e7eb">
+        <th>Estado</th>
+        <th>Cantidad</th>
+        <th>%</th>
       </tr>
     </thead>
     <tbody>
-      ${row('✅','Completadas',s.completed)}
-      ${row('🔄','En progreso',s.progress)}
-      ${row('📋','Próximas',s.todo)}
-      ${row('🚫','Stopper',s.blocked)}
-      ${row('❓','Incógnita',s.qa)}
+      ${row('✅','Completadas', s.completed)}
+      ${row('🔄','En progreso', s.progress)}
+      ${row('🧪','En QA', s.qa)}
+      ${row('🚫','Stopper', s.blocked)}
+      ${row('📋','Pendientes', s.todo)}
+      ${row('🟠','Canceladas', s.cancelled)}
     </tbody>
   </table>`;
 }
+
 
 
 function genProjectLinks(){
@@ -254,6 +260,55 @@ if(L.Backlog)h+=`<a href="${L.Backlog}" target="_blank" style="display:inline-fl
 h+=`</div>`;
 return h;
 }
+
+function genHealthSummary(s){
+  const t = S.flt.length;
+  if(!t) return '';
+
+  const pct = Math.round(s.completed / t * 100);
+  let status = '🟢 Salud óptima';
+  let color = '#16a34a';
+
+  if (s.blocked > 0 || pct < 40) {
+    status = '🔴 Riesgo alto';
+    color = '#dc2626';
+  } else if (pct < 70) {
+    status = '🟡 Progreso estable';
+    color = '#ea580c';
+  }
+
+  const projName =
+    S.proj === 'ALL'
+      ? 'Todos los proyectos'
+      : PROJECTS.find(p => p.k === S.proj)?.n || S.proj;
+
+  let txt = `
+<strong>${status} – ${projName}</strong><br>
+${pct}% de las tareas están completadas (${s.completed} de ${t}).`;
+
+  if (s.blocked)
+    txt += `<br>🚫 <strong>${s.blocked} stoppers activos</strong> requieren atención inmediata.`;
+
+  if (s.progress)
+    txt += `<br>🔄 ${s.progress} tareas en progreso.`;
+
+  if (s.todo)
+    txt += `<br>📋 ${s.todo} tareas pendientes de iniciar.`;
+
+  return `
+  <div style="
+    background:#fff;
+    border-left:4px solid ${color};
+    padding:16px;
+    border-radius:8px;
+    margin-bottom:16px;
+    font-size:14px;
+    line-height:1.5
+  ">
+    ${txt}
+  </div>`;
+}
+
 
 function genSum(s){
 const t=S.flt.length;if(!t)return'';
