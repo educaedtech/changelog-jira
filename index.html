@@ -17,6 +17,10 @@ body{font-family:'Inter',sans-serif;background:#fafafa;color:#1a1a1a;line-height
 .btn{padding:8px 16px;border:1px solid #e5e7eb;background:#fff;border-radius:20px;font-size:14px;cursor:pointer;color:#6b7280}
 .btn:hover{border-color:#1a1a1a;color:#1a1a1a}
 .btn.active{background:#1a1a1a;color:#fff}
+/* ★ Botón especial Lluvia de ideas */
+.btn-ideas{background:#ede9fe;color:#7c3aed;border-color:#ddd6fe}
+.btn-ideas:hover{background:#ddd6fe;border-color:#7c3aed;color:#7c3aed}
+.btn-ideas.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
 .main{max-width:1000px;margin:0 auto;padding:32px 24px}
 .box{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:24px;margin-bottom:24px}
 .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
@@ -114,6 +118,12 @@ const PROJECTS=[
     Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/EHC/boards/652/backlog'
   }}
 ];
+
+// ★ ID del filtro de Lluvia de ideas
+const FILTER_IDEAS = '13076';
+// ★ Clave especial para distinguir el modo filtro
+const MODE_IDEAS = '__IDEAS__';
+
 const BLOCKED=['PTE REQUISITOS'];
 const IGNORE=['COMPLETADA','CANCELADA','STANDBY','PTE REQUISITOS'];
 const AUTO=['this work item','created based on','jira form','email address:','automation','automatically','transitioned'];
@@ -156,18 +166,32 @@ const clrFlt=()=>{S.stat=null;S.epic=null;S.user=null;S.flt=[...S.all];S.pg=0};
 async function load(){
 S.load=true;S.all=[];S.flt=[];S.prog=0;S.tot=0;S.err=null;clrFlt();render();
 try{
-const pf=S.proj==='ALL'?`project IN ("${PROJECTS.map(p=>p.k).join('","')}")`:`project="${S.proj}"`;
-const jql=`${pf} ORDER BY updated DESC`;let npt=null,all=[];
-do{
-let url=`${JIRA}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent,issuetype`;
-if(npt)url+=`&nextPageToken=${encodeURIComponent(npt)}`;
-const res=await fetch(PROXY+encodeURIComponent(url),{headers:{'Accept':'application/json'}});
-if(!res.ok)throw new Error(`Error ${res.status}`);
-const data=await res.json();all=[...all,...(data.issues||[])];
-if(!S.tot&&data.total)S.tot=data.total;S.prog=all.length;render();
-npt=data.nextPageToken;if(npt)await new Promise(r=>setTimeout(r,50));
-}while(npt);
-S.all=all.filter(i=>(i.fields.issuetype?.name||'').toLowerCase()!=='epic');S.flt=[...S.all];extFlt();
+  // ★ Si estamos en modo Lluvia de ideas, usamos el filtro; si no, proyectos normales
+  let jql;
+  if(S.proj === MODE_IDEAS){
+    jql = `filter=${FILTER_IDEAS} ORDER BY updated DESC`;
+  } else {
+    const pf=S.proj==='ALL'?`project IN ("${PROJECTS.map(p=>p.k).join('","')}")`:`project="${S.proj}"`;
+    jql=`${pf} ORDER BY updated DESC`;
+  }
+
+  let npt=null,all=[];
+  do{
+    let url=`${JIRA}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent,issuetype`;
+    if(npt)url+=`&nextPageToken=${encodeURIComponent(npt)}`;
+    const res=await fetch(PROXY+encodeURIComponent(url),{headers:{'Accept':'application/json'}});
+    if(!res.ok)throw new Error(`Error ${res.status}`);
+    const data=await res.json();all=[...all,...(data.issues||[])];
+    if(!S.tot&&data.total)S.tot=data.total;S.prog=all.length;render();
+    npt=data.nextPageToken;if(npt)await new Promise(r=>setTimeout(r,50));
+  }while(npt);
+
+  // ★ En modo Ideas no filtramos épicas para mostrar todo
+  S.all = S.proj === MODE_IDEAS
+    ? all
+    : all.filter(i=>(i.fields.issuetype?.name||'').toLowerCase()!=='epic');
+
+  S.flt=[...S.all];extFlt();
 }catch(e){S.err=e.message}
 S.load=false;render();
 }
@@ -177,11 +201,18 @@ function render(){document.getElementById('app').innerHTML=html();bindE()}
 function html(){
 const st=cStats(),hasF=S.stat||S.epic||S.user;
 const si=S.pg*50,ei=si+50,di=S.flt.slice(si,ei),tp=Math.ceil(S.flt.length/50);
+
+// ★ Título y subtítulo dinámico según modo
+const titleLabel = S.proj === MODE_IDEAS ? '💡 Lluvia de Ideas' : '🔄 Changelog';
+const subtitleLabel = S.proj === MODE_IDEAS ? 'Ideas y propuestas del equipo' : 'Proyectos - EducaEdtech';
+
 return`
-<header class="header"><div class="hc"><h1>🔄 Changelog</h1><p>Proyectos - EducaEdtech</p></div></header>
+<header class="header"><div class="hc"><h1>${titleLabel}</h1><p>${subtitleLabel}</p></div></header>
 <nav class="filters"><div class="fc">
 <button class="btn ${S.proj==='ALL'?'active':''}" data-p="ALL">Todos</button>
 ${PROJECTS.map(p=>`<button class="btn ${S.proj===p.k?'active':''}" data-p="${p.k}">${p.n}</button>`).join('')}
+<!-- ★ Botón Lluvia de ideas separado visualmente -->
+<button class="btn btn-ideas ${S.proj===MODE_IDEAS?'active':''}" data-p="${MODE_IDEAS}">💡 Lluvia de ideas</button>
 </div></nav>
 <main class="main">
 ${S.err?`<div class="error">⚠️ ${S.err}<br><small>Verifica credenciales en Worker Cloudflare</small></div>`:''}
@@ -220,23 +251,11 @@ function cStats(){
 
 function genSummaryTable(s){
   const t = S.flt.length || 1;
-
   const row = (icon, label, val) =>
-    `<tr>
-      <td>${icon} ${label}</td>
-      <td><strong>${val}</strong></td>
-      <td>${Math.round(val/t*100)}%</td>
-    </tr>`;
-
+    `<tr><td>${icon} ${label}</td><td><strong>${val}</strong></td><td>${Math.round(val/t*100)}%</td></tr>`;
   return `
   <table style="width:100%;font-size:13px;border-collapse:collapse;margin:12px 0 20px">
-    <thead>
-      <tr style="text-align:left;color:#6b7280;border-bottom:1px solid #e5e7eb">
-        <th>Estado</th>
-        <th>Cantidad</th>
-        <th>%</th>
-      </tr>
-    </thead>
+    <thead><tr style="text-align:left;color:#6b7280;border-bottom:1px solid #e5e7eb"><th>Estado</th><th>Cantidad</th><th>%</th></tr></thead>
     <tbody>
       ${row('✅','Completadas', s.completed)}
       ${row('🔁','Por hacer', s.rejected)}
@@ -250,160 +269,65 @@ function genSummaryTable(s){
 }
 
 function genProjectLinks(){
-if(S.proj==='ALL')return'';
-const proj=PROJECTS.find(p=>p.k===S.proj);
-if(!proj||!proj.links)return'';
-
-const L=proj.links;
-let h=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">`;
-
-if(L.Confluence)h+=`<a href="${L.Confluence}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">📚</span>Confluence</a>`;
-
-if(L.Figma)h+=`<a href="${L.Figma}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">🎨</span>Figma</a>`;
-
-if(L.Backlog)h+=`<a href="${L.Backlog}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">📋</span>Backlog</a>`;
-
-h+=`</div>`;
-return h;
+  // ★ En modo Ideas no mostramos enlaces de proyecto
+  if(S.proj==='ALL'||S.proj===MODE_IDEAS)return'';
+  const proj=PROJECTS.find(p=>p.k===S.proj);
+  if(!proj||!proj.links)return'';
+  const L=proj.links;
+  let h=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">`;
+  if(L.Confluence)h+=`<a href="${L.Confluence}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">📚</span>Confluence</a>`;
+  if(L.Figma)h+=`<a href="${L.Figma}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">🎨</span>Figma</a>`;
+  if(L.Backlog)h+=`<a href="${L.Backlog}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">📋</span>Backlog</a>`;
+  h+=`</div>`;
+  return h;
 }
 
 function genHealthSummary(s){
   const t = S.flt.length;
   if(!t) return '';
-
-  // Nueva lógica de salud según especificaciones
   let status, color;
-  
-  if(s.blocked >= 5 || s.todo >= 5){
-    status = '🔴 Salud - Riesgo alto';
-    color = '#dc2626';
-  } else if(s.blocked >= 3 || s.todo >= 3){
-    status = '🟠 Salud - Progreso con riesgos';
-    color = '#ea580c';
-  } else if(s.blocked === 0){
-    status = '🟢 Salud - Excelente';
-    color = '#16a34a';
-  } else {
-    // 1-2 bloqueadas y menos de 3 pendientes
-    status = '🟠 Salud - Progreso con riesgos';
-    color = '#ea580c';
-  }
+  if(s.blocked >= 5 || s.todo >= 5){status='🔴 Salud - Riesgo alto';color='#dc2626';}
+  else if(s.blocked >= 3 || s.todo >= 3){status='🟠 Salud - Progreso con riesgos';color='#ea580c';}
+  else if(s.blocked === 0){status='🟢 Salud - Excelente';color='#16a34a';}
+  else{status='🟠 Salud - Progreso con riesgos';color='#ea580c';}
 
+  // ★ Nombre dinámico para Lluvia de ideas
   const projName =
-    S.proj === 'ALL'
-      ? 'Todos los proyectos'
-      : PROJECTS.find(p => p.k === S.proj)?.n || S.proj;
+    S.proj === MODE_IDEAS ? '💡 Lluvia de Ideas' :
+    S.proj === 'ALL' ? 'Todos los proyectos' :
+    PROJECTS.find(p=>p.k===S.proj)?.n || S.proj;
 
   const pct = Math.round(s.completed / t * 100);
-
   let txt = `<strong>${status} – ${projName}</strong><br>`;
   txt += `${pct}% de las tareas están completadas (${s.completed} de ${t}).`;
-
-  if (s.blocked)
-    txt += `<br>🚫 <strong>${s.blocked} bloqueadas</strong> requieren atención.`;
-
-  if (s.rejected)
-    txt += `<br>🔁 ${s.rejected} por hacer/rechazadas.`;
-
-  if (s.progress)
-    txt += `<br>🔄 ${s.progress} tareas en progreso.`;
-
-  if (s.todo)
-    txt += `<br>📋 ${s.todo} tareas pendientes.`;
-
-  return `
-<div style="
-  width:100%;
-  box-sizing:border-box;
-  background:#fff;
-  border-left:6px solid ${color};
-  padding:16px 20px;
-  border-radius:8px;
-  margin:16px 0;
-  font-size:14px;
-  line-height:1.6
-">
-  ${txt}
-</div>`;
-}
-
-function genSum(s){
-  const t = S.flt.length;
-  if(!t) return '';
-
-  const pn =
-    S.proj === 'ALL'
-      ? 'TODOS LOS PROYECTOS'
-      : PROJECTS.find(p => p.k === S.proj)?.n?.toUpperCase() || S.proj;
-
-  const now = new Date();
-  now.setHours(0,0,0,0);
-
-  const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
-
-  const overdue = S.flt.filter(i=>{
-    if(!i.fields.duedate) return false;
-    const d = new Date(i.fields.duedate);
-    return d < now && !IGNORE.includes((i.fields.status?.name||'').toUpperCase());
-  }).length;
-
-  const recentDone = S.flt.filter(i=>{
-    if((i.fields.status?.name||'').toUpperCase() !== 'COMPLETADA' || !i.fields.resolutiondate) return false;
-    return new Date(i.fields.resolutiondate) >= weekAgo;
-  }).length;
-
-  let r = `📊 RESUMEN DE ${pn}\n\n`;
-  r += `Historial completo: ${t} tareas. `;
-
-  const pc = Math.round(s.completed / t * 100);
-  r += `Completadas: ${s.completed} (${pc}%). `;
-
-  if(s.cancelled){
-    const pcan = Math.round(s.cancelled / t * 100);
-    r += `Canceladas: ${s.cancelled} (${pcan}%). `;
-  }
-
-  if(recentDone) r += `Esta semana se completaron ${recentDone}. `;
-  if(overdue) r += `⚠️ ${overdue} con fecha vencida. `;
-
-  if(s.progress || s.qa || s.blocked || s.todo || s.rejected){
-    r += `\n\n📌 Estado actual:\n`;
-    if(s.blocked) r += `• 🚫 ${s.blocked} bloqueadas\n`;
-    if(s.progress) r += `• 🔄 ${s.progress} en progreso\n`;
-    if(s.todo) r += `• 📋 ${s.todo} pendientes\n`;
-    if(s.rejected) r += `• 🔁 ${s.rejected} por hacer/rechazadas\n`;
-  }
-
-  return r;
+  if(s.blocked) txt += `<br>🚫 <strong>${s.blocked} bloqueadas</strong> requieren atención.`;
+  if(s.rejected) txt += `<br>🔁 ${s.rejected} por hacer/rechazadas.`;
+  if(s.progress) txt += `<br>🔄 ${s.progress} tareas en progreso.`;
+  if(s.todo)     txt += `<br>📋 ${s.todo} tareas pendientes.`;
+  return `<div style="width:100%;box-sizing:border-box;background:#fff;border-left:6px solid ${color};padding:16px 20px;border-radius:8px;margin:16px 0;font-size:14px;line-height:1.6">${txt}</div>`;
 }
 
 function genStoppers(){
-const blockers=S.flt.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
-if(!blockers.length)return'';
-
-let h=`<div style="margin-top:16px;padding:16px;background:#fee2e2;border-radius:8px;border:1px solid #fecaca">`;
-h+=`<div style="font-weight:600;color:#dc2626;margin-bottom:12px">🚨 STOPPERS (${blockers.length}) - Requieren atención inmediata</div>`;
-
-blockers.forEach(b=>{
-const st=b.fields.status?.name||'';
-const assignee=b.fields.assignee?.displayName||'Sin asignar';
-h+=`<div style="padding:8px 0;border-bottom:1px solid #fecaca;font-size:13px">`;
-h+=`<a href="${JIRA}/browse/${b.key}" target="_blank" style="color:#dc2626;font-weight:600;text-decoration:none">${b.key}</a> `;
-h+=`<span style="color:#1a1a1a">${trunc(b.fields.summary,60)}</span><br>`;
-h+=`<span style="font-size:12px;color:#6b7280">${st} • ${assignee}</span>`;
-h+=`</div>`;
-});
-
-h+=`</div>`;
-return h;
+  const blockers=S.flt.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
+  if(!blockers.length)return'';
+  let h=`<div style="margin-top:16px;padding:16px;background:#fee2e2;border-radius:8px;border:1px solid #fecaca">`;
+  h+=`<div style="font-weight:600;color:#dc2626;margin-bottom:12px">🚨 STOPPERS (${blockers.length}) - Requieren atención inmediata</div>`;
+  blockers.forEach(b=>{
+    const st=b.fields.status?.name||'',assignee=b.fields.assignee?.displayName||'Sin asignar';
+    h+=`<div style="padding:8px 0;border-bottom:1px solid #fecaca;font-size:13px">`;
+    h+=`<a href="${JIRA}/browse/${b.key}" target="_blank" style="color:#dc2626;font-weight:600;text-decoration:none">${b.key}</a> `;
+    h+=`<span style="color:#1a1a1a">${trunc(b.fields.summary,60)}</span><br>`;
+    h+=`<span style="font-size:12px;color:#6b7280">${st} • ${assignee}</span></div>`;
+  });
+  h+=`</div>`;
+  return h;
 }
 
 function rEntry(i){
-const st=i.fields.status?.name||'',pr=PROJECTS.find(p=>p.k===i.key.split('-')[0]),ds=dueS(i.fields.duedate,st);
-const ep=i.fields.parent?.fields?.summary,desc=i.fields.description?trunc(adf(i.fields.description),120):'';
-const cm=getCmt(i.fields.comment?.comments);
-return`<div class="entry"><div class="edate">${fmt(i.fields.updated)}</div><div class="econtent">
+  const st=i.fields.status?.name||'',pr=PROJECTS.find(p=>p.k===i.key.split('-')[0]),ds=dueS(i.fields.duedate,st);
+  const ep=i.fields.parent?.fields?.summary,desc=i.fields.description?trunc(adf(i.fields.description),120):'';
+  const cm=getCmt(i.fields.comment?.comments);
+  return`<div class="entry"><div class="edate">${fmt(i.fields.updated)}</div><div class="econtent">
 <a href="${JIRA}/browse/${i.key}" target="_blank" class="etitle">${i.fields.summary}</a>
 ${desc?`<p class="edesc">${desc}</p>`:''}
 <div class="badges"><span class="badge ${sBadge(st)}">${st}</span>${pr?`<span class="badge b-proj">${pr.n}</span>`:''}${ep?`<span class="badge b-epic">${trunc(ep,18)}</span>`:''}<a href="${JIRA}/browse/${i.key}" target="_blank" class="ikey">${i.key}</a></div>
@@ -413,13 +337,13 @@ ${cm?`<div class="cmt">💬 ${cm}</div>`:''}
 }
 
 function bindE(){
-document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.proj=b.dataset.p;load()});
-document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.stat=S.stat===b.dataset.s?null:b.dataset.s;appFlt();render()});
-document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{S.epic=S.epic===b.dataset.e?null:b.dataset.e;appFlt();render()});
-document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{S.user=S.user===b.dataset.u?null:b.dataset.u;appFlt();render()});
-document.getElementById('clr')?.addEventListener('click',()=>{clrFlt();render()});
-document.getElementById('prev')?.addEventListener('click',()=>{if(S.pg>0){S.pg--;render();scrollTo(0,0)}});
-document.getElementById('next')?.addEventListener('click',()=>{if(S.pg<Math.ceil(S.flt.length/50)-1){S.pg++;render();scrollTo(0,0)}});
+  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.proj=b.dataset.p;load()});
+  document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.stat=S.stat===b.dataset.s?null:b.dataset.s;appFlt();render()});
+  document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{S.epic=S.epic===b.dataset.e?null:b.dataset.e;appFlt();render()});
+  document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{S.user=S.user===b.dataset.u?null:b.dataset.u;appFlt();render()});
+  document.getElementById('clr')?.addEventListener('click',()=>{clrFlt();render()});
+  document.getElementById('prev')?.addEventListener('click',()=>{if(S.pg>0){S.pg--;render();scrollTo(0,0)}});
+  document.getElementById('next')?.addEventListener('click',()=>{if(S.pg<Math.ceil(S.flt.length/50)-1){S.pg++;render();scrollTo(0,0)}});
 }
 
 render();load();
