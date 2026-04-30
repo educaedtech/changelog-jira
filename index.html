@@ -212,7 +212,7 @@ return`
 <button class="btn ${S.proj==='ALL'?'active':''}" data-p="ALL">Todos</button>
 ${PROJECTS.map(p=>`<button class="btn ${S.proj===p.k?'active':''}" data-p="${p.k}">${p.n}</button>`).join('')}
 <!-- ★ Botón Lluvia de ideas separado visualmente -->
-<button class="btn btn-ideas ${S.proj===MODE_IDEAS?'active':''}" data-p="${MODE_IDEAS}">💡 Lluvia de ideas</button>
+<button class="btn btn-ideas ${S.proj===MODE_IDEAS?'active':''}" data-p="${MODE_IDEAS}">Lluvia de ideas</button>
 </div></nav>
 <main class="main">
 ${S.err?`<div class="error">⚠️ ${S.err}<br><small>Verifica credenciales en Worker Cloudflare</small></div>`:''}
