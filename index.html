@@ -128,7 +128,7 @@ const BLOCKED=['PTE REQUISITOS'];
 const IGNORE=['COMPLETADA','CANCELADA','STANDBY','PTE REQUISITOS'];
 const AUTO=['this work item','created based on','jira form','email address:','automation','automatically','transitioned'];
 
-let S={all:[],flt:[],load:false,prog:0,tot:0,err:null,proj:'ALL',stat:null,epic:null,user:null,epics:[],users:[],pg:0};
+let S={all:[],flt:[],load:false,prog:0,tot:0,err:null,proj:'ALL',stat:null,epic:null,user:null,label:null,epics:[],users:[],labels:[],pg:0};
 
 const fmt=d=>d?new Date(d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'';
 const trunc=(t,m=140)=>{if(!t)return'';const c=String(t).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();return c.length<=m?c:c.slice(0,m)+'...'};
@@ -159,9 +159,9 @@ const sBadge=s=>{
 };
 const dueS=(d,s)=>{if(!d)return{c:'',t:''};const due=new Date(d),now=new Date();now.setHours(0,0,0,0);const diff=Math.ceil((due-now)/864e5);if(diff<0&&!IGNORE.includes((s||'').toUpperCase()))return{c:'overdue',t:'⚠️ Vencida: '};if(diff>=0&&diff<=3)return{c:'',t:'⏰ '};return{c:'',t:'📅 '}};
 
-const extFlt=()=>{const em=new Map(),um=new Map();S.all.forEach(i=>{const e=i.fields.parent?.fields?.summary;if(e)em.set(e,(em.get(e)||0)+1);const u=i.fields.assignee?.displayName;if(u)um.set(u,(um.get(u)||0)+1)});S.epics=[...em].sort((a,b)=>b[1]-a[1]).map(e=>({n:e[0],c:e[1]}));S.users=[...um].sort((a,b)=>b[1]-a[1]).map(u=>({n:u[0],c:u[1]}))};
-const appFlt=()=>{let f=[...S.all];if(S.stat)f=f.filter(i=>sCat(i.fields.status?.name)===S.stat);if(S.epic)f=f.filter(i=>i.fields.parent?.fields?.summary===S.epic);if(S.user)f=f.filter(i=>i.fields.assignee?.displayName===S.user);S.flt=f;S.pg=0};
-const clrFlt=()=>{S.stat=null;S.epic=null;S.user=null;S.flt=[...S.all];S.pg=0};
+const extFlt=()=>{const em=new Map(),um=new Map(),lm=new Map();S.all.forEach(i=>{const e=i.fields.parent?.fields?.summary;if(e)em.set(e,(em.get(e)||0)+1);const u=i.fields.assignee?.displayName;if(u)um.set(u,(um.get(u)||0)+1);(i.fields.labels||[]).forEach(l=>{if(l)lm.set(l,(lm.get(l)||0)+1)})});S.epics=[...em].sort((a,b)=>b[1]-a[1]).map(e=>({n:e[0],c:e[1]}));S.users=[...um].sort((a,b)=>b[1]-a[1]).map(u=>({n:u[0],c:u[1]}));S.labels=[...lm].sort((a,b)=>b[1]-a[1]).map(l=>({n:l[0],c:l[1]}))};
+const appFlt=()=>{let f=[...S.all];if(S.stat)f=f.filter(i=>sCat(i.fields.status?.name)===S.stat);if(S.epic)f=f.filter(i=>i.fields.parent?.fields?.summary===S.epic);if(S.user)f=f.filter(i=>i.fields.assignee?.displayName===S.user);if(S.label)f=f.filter(i=>(i.fields.labels||[]).includes(S.label));S.flt=f;S.pg=0};
+const clrFlt=()=>{S.stat=null;S.epic=null;S.user=null;S.label=null;S.flt=[...S.all];S.pg=0};
 
 async function load(){
 S.load=true;S.all=[];S.flt=[];S.prog=0;S.tot=0;S.err=null;clrFlt();render();
@@ -177,7 +177,7 @@ try{
 
   let npt=null,all=[];
   do{
-    let url=`${JIRA}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent,issuetype`;
+    let url=`${JIRA}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent,issuetype,labels`;
     if(npt)url+=`&nextPageToken=${encodeURIComponent(npt)}`;
     const res=await fetch(PROXY+encodeURIComponent(url),{headers:{'Accept':'application/json'}});
     if(!res.ok)throw new Error(`Error ${res.status}`);
@@ -199,7 +199,7 @@ S.load=false;render();
 function render(){document.getElementById('app').innerHTML=html();bindE()}
 
 function html(){
-const st=cStats(),hasF=S.stat||S.epic||S.user;
+const st=cStats(),hasF=S.stat||S.epic||S.user||S.label;
 const si=S.pg*50,ei=si+50,di=S.flt.slice(si,ei),tp=Math.ceil(S.flt.length/50);
 
 // ★ Título y subtítulo dinámico según modo
@@ -234,6 +234,7 @@ ${genStoppers()}</div>
 <div class="fbox"><div class="frow">
 <div class="fgrp"><div class="fgrp-title">Épicas (${S.epics.length})</div><div class="tags">${S.epics.map(e=>`<span class="tag ${S.epic===e.n?'active':''}" data-e="${e.n}">${trunc(e.n,20)} (${e.c})</span>`).join('')||'Sin épicas'}</div></div>
 <div class="fgrp"><div class="fgrp-title">Usuarios (${S.users.length})</div><div class="tags">${S.users.map(u=>`<span class="tag ${S.user===u.n?'active':''}" data-u="${u.n}">${u.n.split(' ')[0]} (${u.c})</span>`).join('')||'Sin usuarios'}</div></div>
+<div class="fgrp"><div class="fgrp-title">Etiquetas (${S.labels.length})</div><div class="tags">${S.labels.map(l=>`<span class="tag ${S.label===l.n?'active':''}" data-l="${l.n}">${l.n} (${l.c})</span>`).join('')||'Sin etiquetas'}</div></div>
 ${hasF?'<span class="clr" id="clr">✕ Limpiar</span>':''}
 </div></div>
 <div class="total">📊 <strong>${S.all.length}</strong> tareas${hasF?` → <strong>${S.flt.length}</strong> filtradas`:''}</div>
@@ -341,6 +342,7 @@ function bindE(){
   document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.stat=S.stat===b.dataset.s?null:b.dataset.s;appFlt();render()});
   document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{S.epic=S.epic===b.dataset.e?null:b.dataset.e;appFlt();render()});
   document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{S.user=S.user===b.dataset.u?null:b.dataset.u;appFlt();render()});
+  document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{S.label=S.label===b.dataset.l?null:b.dataset.l;appFlt();render()});
   document.getElementById('clr')?.addEventListener('click',()=>{clrFlt();render()});
   document.getElementById('prev')?.addEventListener('click',()=>{if(S.pg>0){S.pg--;render();scrollTo(0,0)}});
   document.getElementById('next')?.addEventListener('click',()=>{if(S.pg<Math.ceil(S.flt.length/50)-1){S.pg++;render();scrollTo(0,0)}});
