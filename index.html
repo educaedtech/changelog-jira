@@ -54,6 +54,13 @@ body{font-family:'Inter',sans-serif;background:#fafafa;color:#1a1a1a;line-height
 .badge{padding:3px 8px;border-radius:10px;font-size:11px;font-weight:500}
 .b-proj{background:#f3f4f6;color:#6b7280}
 .b-epic{background:#e0e7ff;color:#4338ca}
+.b-itype{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.b-bug{background:#fee2e2;color:#dc2626;border:1px solid #fecaca}
+.b-story{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+.b-task{background:#f3f4f6;color:#4b5563;border:1px solid #d1d5db}
+.b-sub{background:#fdf4ff;color:#9333ea;border:1px solid #e9d5ff}
+.b-epic-type{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.b-itype-def{background:#f8fafc;color:#64748b;border:1px solid #e2e8f0}
 .emeta{display:flex;gap:12px;font-size:12px;color:#6b7280;flex-wrap:wrap}
 .overdue{color:#dc2626;font-weight:600}
 .ikey{font-size:11px;color:#2563eb;text-decoration:none}
@@ -128,7 +135,7 @@ const BLOCKED=['PTE REQUISITOS'];
 const IGNORE=['COMPLETADA','CANCELADA','STANDBY','PTE REQUISITOS'];
 const AUTO=['this work item','created based on','jira form','email address:','automation','automatically','transitioned'];
 
-let S={all:[],flt:[],load:false,prog:0,tot:0,err:null,proj:'ALL',stat:null,epic:null,user:null,label:null,epics:[],users:[],labels:[],pg:0};
+let S={all:[],flt:[],load:false,prog:0,tot:0,err:null,proj:'ALL',stat:null,epic:null,user:null,label:null,itype:null,epics:[],users:[],labels:[],itypes:[],pg:0};
 
 const fmt=d=>d?new Date(d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'';
 const trunc=(t,m=140)=>{if(!t)return'';const c=String(t).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();return c.length<=m?c:c.slice(0,m)+'...'};
@@ -157,11 +164,22 @@ const sBadge=s=>{
   if(x==='POR HACER'||x.includes('RECHAZADA'))return's-yellow';
   return's-gray';
 };
+// ★ Color por tipo de issue
+const iTypeBadge=t=>{
+  const x=(t||'').toLowerCase();
+  if(x.includes('bug'))return'b-bug';
+  if(x.includes('story'))return'b-story';
+  if(x.includes('epic'))return'b-epic-type';
+  if(x.includes('task')||x==='tarea')return'b-task';
+  if(x.includes('sub'))return'b-sub';
+  return'b-itype-def';
+};
+
 const dueS=(d,s)=>{if(!d)return{c:'',t:''};const due=new Date(d),now=new Date();now.setHours(0,0,0,0);const diff=Math.ceil((due-now)/864e5);if(diff<0&&!IGNORE.includes((s||'').toUpperCase()))return{c:'overdue',t:'⚠️ Vencida: '};if(diff>=0&&diff<=3)return{c:'',t:'⏰ '};return{c:'',t:'📅 '}};
 
-const extFlt=()=>{const em=new Map(),um=new Map(),lm=new Map();S.all.forEach(i=>{const e=i.fields.parent?.fields?.summary;if(e)em.set(e,(em.get(e)||0)+1);const u=i.fields.assignee?.displayName;if(u)um.set(u,(um.get(u)||0)+1);(i.fields.labels||[]).forEach(l=>{if(l)lm.set(l,(lm.get(l)||0)+1)})});S.epics=[...em].sort((a,b)=>b[1]-a[1]).map(e=>({n:e[0],c:e[1]}));S.users=[...um].sort((a,b)=>b[1]-a[1]).map(u=>({n:u[0],c:u[1]}));S.labels=[...lm].sort((a,b)=>b[1]-a[1]).map(l=>({n:l[0],c:l[1]}))};
-const appFlt=()=>{let f=[...S.all];if(S.stat)f=f.filter(i=>sCat(i.fields.status?.name)===S.stat);if(S.epic)f=f.filter(i=>i.fields.parent?.fields?.summary===S.epic);if(S.user)f=f.filter(i=>i.fields.assignee?.displayName===S.user);if(S.label)f=f.filter(i=>(i.fields.labels||[]).includes(S.label));S.flt=f;S.pg=0};
-const clrFlt=()=>{S.stat=null;S.epic=null;S.user=null;S.label=null;S.flt=[...S.all];S.pg=0};
+const extFlt=()=>{const em=new Map(),um=new Map(),lm=new Map(),tm=new Map();S.all.forEach(i=>{const e=i.fields.parent?.fields?.summary;if(e)em.set(e,(em.get(e)||0)+1);const u=i.fields.assignee?.displayName;if(u)um.set(u,(um.get(u)||0)+1);(i.fields.labels||[]).forEach(l=>{if(l)lm.set(l,(lm.get(l)||0)+1)});const t=i.fields.issuetype?.name;if(t)tm.set(t,(tm.get(t)||0)+1)});S.epics=[...em].sort((a,b)=>b[1]-a[1]).map(e=>({n:e[0],c:e[1]}));S.users=[...um].sort((a,b)=>b[1]-a[1]).map(u=>({n:u[0],c:u[1]}));S.labels=[...lm].sort((a,b)=>b[1]-a[1]).map(l=>({n:l[0],c:l[1]}));S.itypes=[...tm].sort((a,b)=>b[1]-a[1]).map(t=>({n:t[0],c:t[1]}))};
+const appFlt=()=>{let f=[...S.all];if(S.stat)f=f.filter(i=>sCat(i.fields.status?.name)===S.stat);if(S.epic)f=f.filter(i=>i.fields.parent?.fields?.summary===S.epic);if(S.user)f=f.filter(i=>i.fields.assignee?.displayName===S.user);if(S.label)f=f.filter(i=>(i.fields.labels||[]).includes(S.label));if(S.itype)f=f.filter(i=>i.fields.issuetype?.name===S.itype);S.flt=f;S.pg=0};
+const clrFlt=()=>{S.stat=null;S.epic=null;S.user=null;S.label=null;S.itype=null;S.flt=[...S.all];S.pg=0};
 
 async function load(){
 S.load=true;S.all=[];S.flt=[];S.prog=0;S.tot=0;S.err=null;clrFlt();render();
@@ -199,7 +217,7 @@ S.load=false;render();
 function render(){document.getElementById('app').innerHTML=html();bindE()}
 
 function html(){
-const st=cStats(),hasF=S.stat||S.epic||S.user||S.label;
+const st=cStats(),hasF=S.stat||S.epic||S.user||S.label||S.itype;
 const si=S.pg*50,ei=si+50,di=S.flt.slice(si,ei),tp=Math.ceil(S.flt.length/50);
 
 // ★ Título y subtítulo dinámico según modo
@@ -230,11 +248,13 @@ ${!S.load&&!S.err&&S.all.length?`
 ${genProjectLinks()}
 ${genHealthSummary(st)}
 ${genSummaryTable(st)}
+${genITypeStats()}
 ${genStoppers()}</div>
 <div class="fbox"><div class="frow">
 <div class="fgrp"><div class="fgrp-title">Épicas (${S.epics.length})</div><div class="tags">${S.epics.map(e=>`<span class="tag ${S.epic===e.n?'active':''}" data-e="${e.n}">${trunc(e.n,20)} (${e.c})</span>`).join('')||'Sin épicas'}</div></div>
 <div class="fgrp"><div class="fgrp-title">Usuarios (${S.users.length})</div><div class="tags">${S.users.map(u=>`<span class="tag ${S.user===u.n?'active':''}" data-u="${u.n}">${u.n.split(' ')[0]} (${u.c})</span>`).join('')||'Sin usuarios'}</div></div>
 <div class="fgrp"><div class="fgrp-title">Etiquetas (${S.labels.length})</div><div class="tags">${S.labels.map(l=>`<span class="tag ${S.label===l.n?'active':''}" data-l="${l.n}">${l.n} (${l.c})</span>`).join('')||'Sin etiquetas'}</div></div>
+<div class="fgrp"><div class="fgrp-title">Tipo de issue (${S.itypes.length})</div><div class="tags">${S.itypes.map(t=>`<span class="tag ${S.itype===t.n?'active':''}" data-t="${t.n}">${t.n} (${t.c})</span>`).join('')||'Sin tipos'}</div></div>
 ${hasF?'<span class="clr" id="clr">✕ Limpiar</span>':''}
 </div></div>
 <div class="total">📊 <strong>${S.all.length}</strong> tareas${hasF?` → <strong>${S.flt.length}</strong> filtradas`:''}</div>
@@ -249,6 +269,22 @@ function cStats(){
   S.flt.forEach(i=>s[sCat(i.fields.status?.name)]++);
   return s;
 }
+
+function genITypeStats(){
+  if(!S.itypes.length) return '';
+  const colors = {
+    'Bug':'#dc2626','Story':'#2563eb','Task':'#4b5563','Tarea':'#4b5563',
+    'Sub-task':'#9333ea','Epic':'#c2410c'
+  };
+  const items = S.itypes.map(t=>{
+    const col = Object.entries(colors).find(([k])=>t.n.toLowerCase().includes(k.toLowerCase()));
+    const c = col ? col[1] : '#64748b';
+    const active = S.itype===t.n ? 'border:2px solid #1a1a1a;' : '';
+    return `<div onclick="window._itClick('${t.n.replace(/'/g,"\\'")}')" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer;background:${c}18;color:${c};border:2px solid transparent;${active}"><span style="font-weight:700;font-size:16px">${t.c}</span><span>${t.n}</span></div>`;
+  }).join('');
+  return `<div style="margin-bottom:16px"><div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:8px">TIPO DE ISSUE</div><div style="display:flex;gap:8px;flex-wrap:wrap">${items}</div></div>`;
+}
+window._itClick=n=>{S.itype=S.itype===n?null:n;appFlt();render()};
 
 function genSummaryTable(s){
   const t = S.flt.length || 1;
@@ -331,7 +367,7 @@ function rEntry(i){
   return`<div class="entry"><div class="edate">${fmt(i.fields.updated)}</div><div class="econtent">
 <a href="${JIRA}/browse/${i.key}" target="_blank" class="etitle">${i.fields.summary}</a>
 ${desc?`<p class="edesc">${desc}</p>`:''}
-<div class="badges"><span class="badge ${sBadge(st)}">${st}</span>${pr?`<span class="badge b-proj">${pr.n}</span>`:''}${ep?`<span class="badge b-epic">${trunc(ep,18)}</span>`:''}<a href="${JIRA}/browse/${i.key}" target="_blank" class="ikey">${i.key}</a></div>
+<div class="badges"><span class="badge ${sBadge(st)}">${st}</span>${pr?`<span class="badge b-proj">${pr.n}</span>`:''}${ep?`<span class="badge b-epic">${trunc(ep,18)}</span>`:''}<span class="badge ${iTypeBadge(i.fields.issuetype?.name)}">${i.fields.issuetype?.name||''}</span><a href="${JIRA}/browse/${i.key}" target="_blank" class="ikey">${i.key}</a></div>
 <div class="emeta">${i.fields.duedate?`<span class="${ds.c}">${ds.t}${fmt(i.fields.duedate)}</span>`:''}<span>📅 Creado: ${fmt(i.fields.created)}</span><span>👤 ${i.fields.assignee?.displayName||'Sin asignar'}</span></div>
 ${cm?`<div class="cmt">💬 ${cm}</div>`:''}
 </div></div>`;
@@ -343,6 +379,7 @@ function bindE(){
   document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{S.epic=S.epic===b.dataset.e?null:b.dataset.e;appFlt();render()});
   document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{S.user=S.user===b.dataset.u?null:b.dataset.u;appFlt();render()});
   document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{S.label=S.label===b.dataset.l?null:b.dataset.l;appFlt();render()});
+  document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{S.itype=S.itype===b.dataset.t?null:b.dataset.t;appFlt();render()});
   document.getElementById('clr')?.addEventListener('click',()=>{clrFlt();render()});
   document.getElementById('prev')?.addEventListener('click',()=>{if(S.pg>0){S.pg--;render();scrollTo(0,0)}});
   document.getElementById('next')?.addEventListener('click',()=>{if(S.pg<Math.ceil(S.flt.length/50)-1){S.pg++;render();scrollTo(0,0)}});
