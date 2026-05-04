@@ -249,6 +249,7 @@ ${genProjectLinks()}
 ${genHealthSummary(st)}
 ${genSummaryTable(st)}
 ${genITypeStats()}
+${genLabelsTableInline()}
 ${genStoppers()}</div>
 <div class="fbox"><div class="frow">
 <div class="fgrp"><div class="fgrp-title">Épicas (${S.epics.length})</div><div class="tags">${S.epics.map(e=>`<span class="tag ${S.epic===e.n?'active':''}" data-e="${e.n}">${trunc(e.n,20)} (${e.c})</span>`).join('')||'Sin épicas'}</div></div>
@@ -271,20 +272,45 @@ function cStats(){
 }
 
 function genITypeStats(){
-  if(!S.itypes.length) return '';
-  const colors = {
-    'Bug':'#dc2626','Story':'#2563eb','Task':'#4b5563','Tarea':'#4b5563',
-    'Sub-task':'#9333ea','Epic':'#c2410c'
+  const t = S.flt.length || 1;
+  const types = S.itypes.filter(tp => tp.n.toLowerCase() !== 'epic');
+  if(!types.length) return '';
+  const row = tp => {
+    const active = S.itype === tp.n;
+    return `<tr onclick="window._itClick('${tp.n.replace(/'/g,"\'")}')" style="cursor:pointer;${active?'background:#ede9fe;':''}">
+      <td style="padding:6px 4px">🏷️ ${tp.n}</td>
+      <td style="padding:6px 4px"><strong>${tp.c}</strong></td>
+      <td style="padding:6px 4px">${Math.round(tp.c/t*100)}%</td>
+    </tr>`;
   };
-  const items = S.itypes.map(t=>{
-    const col = Object.entries(colors).find(([k])=>t.n.toLowerCase().includes(k.toLowerCase()));
-    const c = col ? col[1] : '#64748b';
-    const active = S.itype===t.n ? 'border:2px solid #1a1a1a;' : '';
-    return `<div onclick="window._itClick('${t.n.replace(/'/g,"\\'")}')" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer;background:${c}18;color:${c};border:2px solid transparent;${active}"><span style="font-weight:700;font-size:16px">${t.c}</span><span>${t.n}</span></div>`;
-  }).join('');
-  return `<div style="margin-bottom:16px"><div style="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:8px">TIPO DE ISSUE</div><div style="display:flex;gap:8px;flex-wrap:wrap">${items}</div></div>`;
+  return `
+    <div style="margin-top:4px;margin-bottom:4px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.05em">TIPO DE ISSUE</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;margin:0 0 20px">
+      <thead><tr style="text-align:left;color:#6b7280;border-bottom:1px solid #e5e7eb"><th>Tipo</th><th>Cantidad</th><th>%</th></tr></thead>
+      <tbody>${types.map(row).join('')}</tbody>
+    </table>`;
 }
 window._itClick=n=>{S.itype=S.itype===n?null:n;appFlt();render()};
+
+function genLabelsTableInline(){
+  const t = S.flt.length || 1;
+  if(!S.labels.length) return '';
+  const row = l => {
+    const active = S.label === l.n;
+    return `<tr onclick="window._lbClick('${l.n.replace(/'/g,"\'")}')" style="cursor:pointer;${active?'background:#dbeafe;':''}">
+      <td style="padding:6px 4px">🔖 ${l.n}</td>
+      <td style="padding:6px 4px"><strong>${l.c}</strong></td>
+      <td style="padding:6px 4px">${Math.round(l.c/t*100)}%</td>
+    </tr>`;
+  };
+  return `
+    <div style="margin-top:4px;margin-bottom:4px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.05em">ETIQUETAS</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;margin:0 0 20px">
+      <thead><tr style="text-align:left;color:#6b7280;border-bottom:1px solid #e5e7eb"><th>Etiqueta</th><th>Cantidad</th><th>%</th></tr></thead>
+      <tbody>${S.labels.map(row).join('')}</tbody>
+    </table>`;
+}
+window._lbClick=n=>{S.label=S.label===n?null:n;appFlt();render()};
 
 function genSummaryTable(s){
   const t = S.flt.length || 1;
