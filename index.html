@@ -305,6 +305,45 @@ function genSummaryTable(s){
   </table>`;
 }
 
+
+function genIssueTypeTable(){
+  const t = S.flt.length || 1;
+  if(!S.issueTypes.length) return '';
+  const row = (name, val) => {
+    const active = S.itype === name;
+    return `<tr style="cursor:pointer;${active?'background:#ede9fe;':''}" data-it="${name}">
+      <td style="padding:6px 4px">🏷️ ${name}</td>
+      <td style="padding:6px 4px"><strong>${val}</strong></td>
+      <td style="padding:6px 4px">${Math.round(val/t*100)}%</td>
+    </tr>`;
+  };
+  return `
+  <div style="margin-top:4px;margin-bottom:4px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.05em">TIPO DE ISSUE</div>
+  <table style="width:100%;font-size:13px;border-collapse:collapse;margin:0 0 20px">
+    <thead><tr style="text-align:left;color:#6b7280;border-bottom:1px solid #e5e7eb"><th>Tipo</th><th>Cantidad</th><th>%</th></tr></thead>
+    <tbody>${S.issueTypes.map(tp=>row(tp.n,tp.c)).join('')}</tbody>
+  </table>`;
+}
+
+function genLabelsTable(){
+  const t = S.flt.length || 1;
+  if(!S.labels.length) return '';
+  const row = (name, val) => {
+    const active = S.label === name;
+    return `<tr style="cursor:pointer;${active?'background:#dbeafe;':''}" data-lb="${name}">
+      <td style="padding:6px 4px">🔖 ${name}</td>
+      <td style="padding:6px 4px"><strong>${val}</strong></td>
+      <td style="padding:6px 4px">${Math.round(val/t*100)}%</td>
+    </tr>`;
+  };
+  return `
+  <div style="margin-top:4px;margin-bottom:4px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.05em">ETIQUETAS</div>
+  <table style="width:100%;font-size:13px;border-collapse:collapse;margin:0 0 20px">
+    <thead><tr style="text-align:left;color:#6b7280;border-bottom:1px solid #e5e7eb"><th>Etiqueta</th><th>Cantidad</th><th>%</th></tr></thead>
+    <tbody>${S.labels.map(l=>row(l.n,l.c)).join('')}</tbody>
+  </table>`;
+}
+
 function genProjectLinks(){
   // ★ En modo Ideas no mostramos enlaces de proyecto
   if(S.proj==='ALL'||S.proj===MODE_IDEAS)return'';
@@ -379,6 +418,8 @@ function bindE(){
   document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{S.epic=S.epic===b.dataset.e?null:b.dataset.e;appFlt();render()});
   document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{S.user=S.user===b.dataset.u?null:b.dataset.u;appFlt();render()});
   document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{S.label=S.label===b.dataset.l?null:b.dataset.l;appFlt();render()});
+  document.querySelectorAll('[data-it]').forEach(b=>b.onclick=()=>{S.itype=S.itype===b.dataset.it?null:b.dataset.it;appFlt();render()});
+  document.querySelectorAll('[data-lb]').forEach(b=>b.onclick=()=>{S.label=S.label===b.dataset.lb?null:b.dataset.lb;appFlt();render()});
   document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{S.itype=S.itype===b.dataset.t?null:b.dataset.t;appFlt();render()});
   document.getElementById('clr')?.addEventListener('click',()=>{clrFlt();render()});
   document.getElementById('prev')?.addEventListener('click',()=>{if(S.pg>0){S.pg--;render();scrollTo(0,0)}});
