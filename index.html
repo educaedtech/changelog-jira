@@ -17,7 +17,7 @@ body{font-family:'Inter',sans-serif;background:#fafafa;color:#1a1a1a;line-height
 .btn{padding:8px 16px;border:1px solid #e5e7eb;background:#fff;border-radius:20px;font-size:14px;cursor:pointer;color:#6b7280}
 .btn:hover{border-color:#1a1a1a;color:#1a1a1a}
 .btn.active{background:#1a1a1a;color:#fff}
-/* ★ Botón especial Lluvia de ideas */
+/* ★ Botón especial Peticiones TECH */
 .btn-ideas{background:#ede9fe;color:#7c3aed;border-color:#ddd6fe}
 .btn-ideas:hover{background:#ddd6fe;border-color:#7c3aed;color:#7c3aed}
 .btn-ideas.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
@@ -126,7 +126,7 @@ const PROJECTS=[
   }}
 ];
 
-// ★ ID del filtro de Lluvia de ideas
+// ★ ID del filtro de Peticiones TECH
 const FILTER_IDEAS = '13076';
 // ★ Clave especial para distinguir el modo filtro
 const MODE_IDEAS = '__IDEAS__';
@@ -184,7 +184,7 @@ const clrFlt=()=>{S.stat=null;S.epic=null;S.user=null;S.label=null;S.itype=null;
 async function load(){
 S.load=true;S.all=[];S.flt=[];S.prog=0;S.tot=0;S.err=null;clrFlt();render();
 try{
-  // ★ Si estamos en modo Lluvia de ideas, usamos el filtro; si no, proyectos normales
+  // ★ Si estamos en modo Peticiones TECH, usamos el filtro; si no, proyectos normales
   let jql;
   if(S.proj === MODE_IDEAS){
     jql = `filter=${FILTER_IDEAS} ORDER BY updated DESC`;
@@ -221,7 +221,7 @@ const st=cStats(),hasF=S.stat||S.epic||S.user||S.label||S.itype;
 const si=S.pg*50,ei=si+50,di=S.flt.slice(si,ei),tp=Math.ceil(S.flt.length/50);
 
 // ★ Título y subtítulo dinámico según modo
-const titleLabel = S.proj === MODE_IDEAS ? 'Lluvia de Ideas' : '🔄 Changelog';
+const titleLabel = S.proj === MODE_IDEAS ? 'Peticiones TECH' : '🔄 Changelog';
 const subtitleLabel = S.proj === MODE_IDEAS ? 'Ideas y propuestas del equipo' : 'Proyectos - EducaEdtech';
 
 return`
@@ -229,8 +229,8 @@ return`
 <nav class="filters"><div class="fc">
 <button class="btn ${S.proj==='ALL'?'active':''}" data-p="ALL">Todos</button>
 ${PROJECTS.map(p=>`<button class="btn ${S.proj===p.k?'active':''}" data-p="${p.k}">${p.n}</button>`).join('')}
-<!-- ★ Botón Lluvia de ideas separado visualmente -->
-<button class="btn btn-ideas ${S.proj===MODE_IDEAS?'active':''}" data-p="${MODE_IDEAS}">Lluvia de ideas</button>
+<!-- ★ Botón Peticiones TECH separado visualmente -->
+<button class="btn btn-ideas ${S.proj===MODE_IDEAS?'active':''}" data-p="${MODE_IDEAS}">Peticiones TECH</button>
 </div></nav>
 <main class="main">
 ${S.err?`<div class="error">⚠️ ${S.err}<br><small>Verifica credenciales en Worker Cloudflare</small></div>`:''}
@@ -393,9 +393,9 @@ function genHealthSummary(s){
   else if(s.blocked === 0){status='🟢 Salud - Excelente';color='#16a34a';}
   else{status='🟠 Salud - Progreso con riesgos';color='#ea580c';}
 
-  // ★ Nombre dinámico para Lluvia de ideas
+  // ★ Nombre dinámico para Peticiones TECH
   const projName =
-    S.proj === MODE_IDEAS ? 'Lluvia de Ideas' :
+    S.proj === MODE_IDEAS ? 'Peticiones TECH' :
     S.proj === 'ALL' ? 'Todos los proyectos' :
     PROJECTS.find(p=>p.k===S.proj)?.n || S.proj;
 
