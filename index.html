@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Changelog - Proyectos</title>
+<title>Peticiones TECH</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -12,15 +12,6 @@ body{font-family:'Inter',sans-serif;background:#fafafa;color:#1a1a1a;line-height
 .hc{max-width:1000px;margin:0 auto;padding:0 24px}
 .header h1{font-size:28px;font-weight:700}
 .header p{color:#6b7280;font-size:15px}
-.filters{background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 0}
-.fc{max-width:1000px;margin:0 auto;padding:0 24px;display:flex;gap:12px;flex-wrap:wrap}
-.btn{padding:8px 16px;border:1px solid #e5e7eb;background:#fff;border-radius:20px;font-size:14px;cursor:pointer;color:#6b7280}
-.btn:hover{border-color:#1a1a1a;color:#1a1a1a}
-.btn.active{background:#1a1a1a;color:#fff}
-/* ★ Botón especial Peticiones TECH */
-.btn-ideas{background:#ede9fe;color:#7c3aed;border-color:#ddd6fe}
-.btn-ideas:hover{background:#ddd6fe;border-color:#7c3aed;color:#7c3aed}
-.btn-ideas.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
 .main{max-width:1000px;margin:0 auto;padding:32px 24px}
 .box{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:24px;margin-bottom:24px}
 .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
@@ -83,77 +74,22 @@ body{font-family:'Inter',sans-serif;background:#fafafa;color:#1a1a1a;line-height
 <script>
 const JIRA='https://educaedtech.atlassian.net';
 const PROXY='https://jira-proxy.shopify-48b.workers.dev/?url=';
-const PROJECTS=[
-  {k:'SEI', n:'Euroinnova', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SH',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SEI/boards/489/backlog'
-  }},
-  {k:'SEH', n:'EducaHub', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/EDUCAHUB',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SEH/boards/490/backlog'
-  }},
-  {k:'SUM', n:'Unimiami', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SU',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SUM/boards/618/backlog'
-  }},
-  {k:'SST', n:'Structuralia', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SHOPIFY',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SST/boards/488/backlog'
-  }},
-  {k:'STP', n:'Temarioenpdf', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SHO',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/STP/boards/783/backlog'
-  }},
-  {k:'SFC', n:'Formación Continua', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SFC',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SFC/boards/750/backlog'
-  }},
-  {k:'SCL', n:'Centro Lengua Capman', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SCDLC',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SCL/boards/1416/backlog'
-  }},
-  {k:'SED', n:'Entorno Desarrollo', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SED',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SED/boards/519/backlog'
-  }},
-  {k:'SDG', n:'DG Formacion', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SD',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SDG/boards/1550/backlog'
-  }},
-  {k:'SRE', n:'Rededuca', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SRE',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SRE/boards/1750/backlog'
-  }},
-  {k:'SIN', n:'Inesem', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SIN',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SIN/boards/1784/backlog'
-  }},
-  {k:'SFE', n:'Fundación EducaEdtech', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/SFE',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/SFE/boards/1820/backlog'
-  }},
-  {k:'EHC', n:'EduHub Core', links:{
-    Confluence:'https://educaedtech.atlassian.net/wiki/spaces/EC',
-    Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/EHC/boards/652/backlog'
-  }}
-];
 // ★ ID del filtro de Peticiones TECH
 const FILTER_IDEAS = '13076';
-// ★ Clave especial para distinguir el modo filtro
-const MODE_IDEAS = '__IDEAS__';
 const BLOCKED=['PTE REQUISITOS'];
 const IGNORE=['COMPLETADA','RECHAZADA','STANDBY','PTE REQUISITOS'];
 const AUTO=['this work item','created based on','jira form','email address:','automation','automatically','transitioned'];
-let S={all:[],flt:[],load:false,prog:0,tot:0,err:null,proj:'ALL',stat:null,epic:null,user:null,label:null,itype:null,epics:[],users:[],labels:[],itypes:[],pg:0};
+let S={all:[],flt:[],load:false,prog:0,tot:0,err:null,stat:null,epic:null,user:null,label:null,itype:null,epics:[],users:[],labels:[],itypes:[],pg:0};
 const fmt=d=>d?new Date(d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'';
 const trunc=(t,m=140)=>{if(!t)return'';const c=String(t).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();return c.length<=m?c:c.slice(0,m)+'...'};
 const adf=a=>{if(!a)return'';if(typeof a==='string')return a;let t='';const r=n=>{if(!n)return;if(n.text)t+=n.text+' ';if(n.content)n.content.forEach(r)};r(a);return t.trim()};
 const isAuto=t=>!t||AUTO.some(f=>t.toLowerCase().includes(f));
 const getCmt=c=>{if(!c||!c.length)return'';for(let i=c.length-1;i>=0;i--){const t=adf(c[i]?.body);if(t&&!isAuto(t)&&t.length>10)return trunc(t,200)}return''};
+// ★ Captura cualquier estado que contenga "RECHAZ" (Rechazada, Rechazada por dirección, PT Rechazada, etc)
 const sCat=s=>{
-  const x=(s||'').toUpperCase();
+  const x=(s||'').toUpperCase().trim();
   if(x==='COMPLETADA')return'completed';
-  if(x==='RECHAZADA')return'cancelled';
+  if(x.includes('RECHAZ'))return'cancelled';
   if(x==='EN PROGRESO')return'progress';
   if(x.includes('QA')||x.includes('APROBADO'))return'qa';
   if(BLOCKED.includes(x))return'blocked';
@@ -161,16 +97,15 @@ const sCat=s=>{
   return'todo';
 };
 const sBadge=s=>{
-  const x=(s||'').toUpperCase();
+  const x=(s||'').toUpperCase().trim();
   if(x==='COMPLETADA')return's-green';
-  if(x==='RECHAZADA')return's-orange';
+  if(x.includes('RECHAZ'))return's-orange';
   if(x==='EN PROGRESO')return's-blue';
   if(x.includes('QA')||x.includes('APROBADO'))return's-purple';
   if(BLOCKED.includes(x))return's-red';
   if(x==='POR HACER')return's-yellow';
   return's-gray';
 };
-// ★ Color por tipo de issue
 const iTypeBadge=t=>{
   const x=(t||'').toLowerCase();
   if(x.includes('bug'))return'b-bug';
@@ -187,14 +122,7 @@ const clrFlt=()=>{S.stat=null;S.epic=null;S.user=null;S.label=null;S.itype=null;
 async function load(){
 S.load=true;S.all=[];S.flt=[];S.prog=0;S.tot=0;S.err=null;clrFlt();render();
 try{
-  // ★ Si estamos en modo Peticiones TECH, usamos el filtro; si no, proyectos normales
-  let jql;
-  if(S.proj === MODE_IDEAS){
-    jql = `filter=${FILTER_IDEAS} ORDER BY updated DESC`;
-  } else {
-    const pf=S.proj==='ALL'?`project IN ("${PROJECTS.map(p=>p.k).join('","')}")`:`project="${S.proj}"`;
-    jql=`${pf} ORDER BY updated DESC`;
-  }
+  const jql = `filter=${FILTER_IDEAS} ORDER BY updated DESC`;
   let npt=null,all=[];
   do{
     let url=`${JIRA}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent,issuetype,labels`;
@@ -205,10 +133,7 @@ try{
     if(!S.tot&&data.total)S.tot=data.total;S.prog=all.length;render();
     npt=data.nextPageToken;if(npt)await new Promise(r=>setTimeout(r,50));
   }while(npt);
-  // ★ En modo Ideas no filtramos épicas para mostrar todo
-  S.all = S.proj === MODE_IDEAS
-    ? all
-    : all.filter(i=>(i.fields.issuetype?.name||'').toLowerCase()!=='epic');
+  S.all = all;
   S.flt=[...S.all];extFlt();
 }catch(e){S.err=e.message}
 S.load=false;render();
@@ -217,17 +142,8 @@ function render(){document.getElementById('app').innerHTML=html();bindE()}
 function html(){
 const st=cStats(),hasF=S.stat||S.epic||S.user||S.label||S.itype;
 const si=S.pg*50,ei=si+50,di=S.flt.slice(si,ei),tp=Math.ceil(S.flt.length/50);
-// ★ Título y subtítulo dinámico según modo
-const titleLabel = S.proj === MODE_IDEAS ? 'Peticiones TECH' : '🔄 Changelog';
-const subtitleLabel = S.proj === MODE_IDEAS ? 'Ideas y propuestas del equipo' : 'Proyectos - EducaEdtech';
 return`
-<header class="header"><div class="hc"><h1>${titleLabel}</h1><p>${subtitleLabel}</p></div></header>
-<nav class="filters"><div class="fc">
-<button class="btn ${S.proj==='ALL'?'active':''}" data-p="ALL">Todos</button>
-${PROJECTS.map(p=>`<button class="btn ${S.proj===p.k?'active':''}" data-p="${p.k}">${p.n}</button>`).join('')}
-<!-- ★ Botón Peticiones TECH separado visualmente -->
-<button class="btn btn-ideas ${S.proj===MODE_IDEAS?'active':''}" data-p="${MODE_IDEAS}">Peticiones TECH</button>
-</div></nav>
+<header class="header"><div class="hc"><h1>Peticiones TECH</h1><p>Ideas y propuestas del equipo</p></div></header>
 <main class="main">
 ${S.err?`<div class="error">⚠️ ${S.err}<br><small>Verifica credenciales en Worker Cloudflare</small></div>`:''}
 ${S.load?`<div class="loading"><div class="spin"></div><p style="font-size:20px;font-weight:600">Cargando...</p><p style="font-size:32px;font-weight:700;color:#2563eb">${S.prog}${S.tot?' / '+S.tot:''}</p>${S.tot?`<div class="prog"><div class="prog-fill" style="width:${Math.round(S.prog/S.tot*100)}%"></div></div>`:''}</div>`:''}
@@ -241,7 +157,6 @@ ${!S.load&&!S.err&&S.all.length?`
 <div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
 <div class="stat s-orange ${S.stat==='cancelled'?'active':''}" data-s="cancelled"><span>${st.cancelled}</span><span>Rechazadas</span></div>
 </div>
-${genProjectLinks()}
 ${genHealthSummary(st)}
 ${genSummaryTable(st)}
 ${genITypeStats()}
@@ -322,55 +237,6 @@ function genSummaryTable(s){
     </tbody>
   </table>`;
 }
-function genIssueTypeTable(){
-  const t = S.flt.length || 1;
-  if(!S.issueTypes.length) return '';
-  const row = (name, val) => {
-    const active = S.itype === name;
-    return `<tr style="cursor:pointer;${active?'background:#ede9fe;':''}" data-it="${name}">
-      <td style="padding:6px 4px">🏷️ ${name}</td>
-      <td style="padding:6px 4px"><strong>${val}</strong></td>
-      <td style="padding:6px 4px">${Math.round(val/t*100)}%</td>
-    </tr>`;
-  };
-  return `
-  <div style="margin-top:4px;margin-bottom:4px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.05em">TIPO DE ISSUE</div>
-  <table style="width:100%;font-size:13px;border-collapse:collapse;margin:0 0 20px">
-    <thead><tr style="text-align:left;color:#6b7280;border-bottom:1px solid #e5e7eb"><th>Tipo</th><th>Cantidad</th><th>%</th></tr></thead>
-    <tbody>${S.issueTypes.map(tp=>row(tp.n,tp.c)).join('')}</tbody>
-  </table>`;
-}
-function genLabelsTable(){
-  const t = S.flt.length || 1;
-  if(!S.labels.length) return '';
-  const row = (name, val) => {
-    const active = S.label === name;
-    return `<tr style="cursor:pointer;${active?'background:#dbeafe;':''}" data-lb="${name}">
-      <td style="padding:6px 4px">🔖 ${name}</td>
-      <td style="padding:6px 4px"><strong>${val}</strong></td>
-      <td style="padding:6px 4px">${Math.round(val/t*100)}%</td>
-    </tr>`;
-  };
-  return `
-  <div style="margin-top:4px;margin-bottom:4px;font-size:11px;font-weight:600;color:#6b7280;letter-spacing:.05em">ETIQUETAS</div>
-  <table style="width:100%;font-size:13px;border-collapse:collapse;margin:0 0 20px">
-    <thead><tr style="text-align:left;color:#6b7280;border-bottom:1px solid #e5e7eb"><th>Etiqueta</th><th>Cantidad</th><th>%</th></tr></thead>
-    <tbody>${S.labels.map(l=>row(l.n,l.c)).join('')}</tbody>
-  </table>`;
-}
-function genProjectLinks(){
-  // ★ En modo Ideas no mostramos enlaces de proyecto
-  if(S.proj==='ALL'||S.proj===MODE_IDEAS)return'';
-  const proj=PROJECTS.find(p=>p.k===S.proj);
-  if(!proj||!proj.links)return'';
-  const L=proj.links;
-  let h=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">`;
-  if(L.Confluence)h+=`<a href="${L.Confluence}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">📚</span>Confluence</a>`;
-  if(L.Figma)h+=`<a href="${L.Figma}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">🎨</span>Figma</a>`;
-  if(L.Backlog)h+=`<a href="${L.Backlog}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;color:#1a1a1a;text-decoration:none;font-weight:500"><span style="font-size:16px">📋</span>Backlog</a>`;
-  h+=`</div>`;
-  return h;
-}
 function genHealthSummary(s){
   const t = S.flt.length;
   if(!t) return '';
@@ -379,16 +245,12 @@ function genHealthSummary(s){
   else if(s.blocked >= 3 || s.todo >= 3){status='🟠 Salud - Progreso con riesgos';color='#ea580c';}
   else if(s.blocked === 0){status='🟢 Salud - Excelente';color='#16a34a';}
   else{status='🟠 Salud - Progreso con riesgos';color='#ea580c';}
-  // ★ Nombre dinámico para Peticiones TECH
-  const projName =
-    S.proj === MODE_IDEAS ? 'Peticiones TECH' :
-    S.proj === 'ALL' ? 'Todos los proyectos' :
-    PROJECTS.find(p=>p.k===S.proj)?.n || S.proj;
   const pct = Math.round(s.completed / t * 100);
-  let txt = `<strong>${status} – ${projName}</strong><br>`;
+  let txt = `<strong>${status} – Peticiones TECH</strong><br>`;
   txt += `${pct}% de las tareas están completadas (${s.completed} de ${t}).`;
   if(s.blocked) txt += `<br>🚫 <strong>${s.blocked} bloqueadas</strong> requieren atención.`;
-  if(s.rejected) txt += `<br>🔁 ${s.rejected} por hacer/rechazadas.`;
+  if(s.rejected) txt += `<br>🔁 ${s.rejected} por hacer.`;
+  if(s.cancelled) txt += `<br>🟠 ${s.cancelled} rechazadas.`;
   if(s.progress) txt += `<br>🔄 ${s.progress} tareas en progreso.`;
   if(s.todo)     txt += `<br>📋 ${s.todo} tareas pendientes.`;
   return `<div style="width:100%;box-sizing:border-box;background:#fff;border-left:6px solid ${color};padding:16px 20px;border-radius:8px;margin:16px 0;font-size:14px;line-height:1.6">${txt}</div>`;
@@ -409,25 +271,22 @@ function genStoppers(){
   return h;
 }
 function rEntry(i){
-  const st=i.fields.status?.name||'',pr=PROJECTS.find(p=>p.k===i.key.split('-')[0]),ds=dueS(i.fields.duedate,st);
+  const st=i.fields.status?.name||'',ds=dueS(i.fields.duedate,st);
   const ep=i.fields.parent?.fields?.summary,desc=i.fields.description?trunc(adf(i.fields.description),120):'';
   const cm=getCmt(i.fields.comment?.comments);
   return`<div class="entry"><div class="edate">${fmt(i.fields.updated)}</div><div class="econtent">
 <a href="${JIRA}/browse/${i.key}" target="_blank" class="etitle">${i.fields.summary}</a>
 ${desc?`<p class="edesc">${desc}</p>`:''}
-<div class="badges"><span class="badge ${sBadge(st)}">${st}</span>${pr?`<span class="badge b-proj">${pr.n}</span>`:''}${ep?`<span class="badge b-epic">${trunc(ep,18)}</span>`:''}<span class="badge ${iTypeBadge(i.fields.issuetype?.name)}">${i.fields.issuetype?.name||''}</span><a href="${JIRA}/browse/${i.key}" target="_blank" class="ikey">${i.key}</a></div>
+<div class="badges"><span class="badge ${sBadge(st)}">${st}</span>${ep?`<span class="badge b-epic">${trunc(ep,18)}</span>`:''}<span class="badge ${iTypeBadge(i.fields.issuetype?.name)}">${i.fields.issuetype?.name||''}</span><a href="${JIRA}/browse/${i.key}" target="_blank" class="ikey">${i.key}</a></div>
 <div class="emeta">${i.fields.duedate?`<span class="${ds.c}">${ds.t}${fmt(i.fields.duedate)}</span>`:''}<span>📅 Creado: ${fmt(i.fields.created)}</span><span>👤 ${i.fields.assignee?.displayName||'Sin asignar'}</span></div>
 ${cm?`<div class="cmt">💬 ${cm}</div>`:''}
 </div></div>`;
 }
 function bindE(){
-  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.proj=b.dataset.p;load()});
   document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.stat=S.stat===b.dataset.s?null:b.dataset.s;appFlt();render()});
   document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{S.epic=S.epic===b.dataset.e?null:b.dataset.e;appFlt();render()});
   document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{S.user=S.user===b.dataset.u?null:b.dataset.u;appFlt();render()});
   document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{S.label=S.label===b.dataset.l?null:b.dataset.l;appFlt();render()});
-  document.querySelectorAll('[data-it]').forEach(b=>b.onclick=()=>{S.itype=S.itype===b.dataset.it?null:b.dataset.it;appFlt();render()});
-  document.querySelectorAll('[data-lb]').forEach(b=>b.onclick=()=>{S.label=S.label===b.dataset.lb?null:b.dataset.lb;appFlt();render()});
   document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{S.itype=S.itype===b.dataset.t?null:b.dataset.t;appFlt();render()});
   document.getElementById('clr')?.addEventListener('click',()=>{clrFlt();render()});
   document.getElementById('prev')?.addEventListener('click',()=>{if(S.pg>0){S.pg--;render();scrollTo(0,0)}});
