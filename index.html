@@ -137,43 +137,37 @@ const PROJECTS=[
     Backlog:'https://educaedtech.atlassian.net/jira/software/c/projects/EHC/boards/652/backlog'
   }}
 ];
-
 // ★ ID del filtro de Peticiones TECH
 const FILTER_IDEAS = '13076';
 // ★ Clave especial para distinguir el modo filtro
 const MODE_IDEAS = '__IDEAS__';
-
 const BLOCKED=['PTE REQUISITOS'];
-const IGNORE=['COMPLETADA','CANCELADA','STANDBY','PTE REQUISITOS'];
+const IGNORE=['COMPLETADA','RECHAZADA','STANDBY','PTE REQUISITOS'];
 const AUTO=['this work item','created based on','jira form','email address:','automation','automatically','transitioned'];
-
 let S={all:[],flt:[],load:false,prog:0,tot:0,err:null,proj:'ALL',stat:null,epic:null,user:null,label:null,itype:null,epics:[],users:[],labels:[],itypes:[],pg:0};
-
 const fmt=d=>d?new Date(d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'';
 const trunc=(t,m=140)=>{if(!t)return'';const c=String(t).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();return c.length<=m?c:c.slice(0,m)+'...'};
 const adf=a=>{if(!a)return'';if(typeof a==='string')return a;let t='';const r=n=>{if(!n)return;if(n.text)t+=n.text+' ';if(n.content)n.content.forEach(r)};r(a);return t.trim()};
 const isAuto=t=>!t||AUTO.some(f=>t.toLowerCase().includes(f));
 const getCmt=c=>{if(!c||!c.length)return'';for(let i=c.length-1;i>=0;i--){const t=adf(c[i]?.body);if(t&&!isAuto(t)&&t.length>10)return trunc(t,200)}return''};
-
 const sCat=s=>{
   const x=(s||'').toUpperCase();
   if(x==='COMPLETADA')return'completed';
-  if(x==='CANCELADA')return'cancelled';
+  if(x==='RECHAZADA')return'cancelled';
   if(x==='EN PROGRESO')return'progress';
   if(x.includes('QA')||x.includes('APROBADO'))return'qa';
   if(BLOCKED.includes(x))return'blocked';
-  if(x==='POR HACER'||x.includes('RECHAZADA'))return'rejected';
+  if(x==='POR HACER')return'rejected';
   return'todo';
 };
-
 const sBadge=s=>{
   const x=(s||'').toUpperCase();
   if(x==='COMPLETADA')return's-green';
-  if(x==='CANCELADA')return's-orange';
+  if(x==='RECHAZADA')return's-orange';
   if(x==='EN PROGRESO')return's-blue';
   if(x.includes('QA')||x.includes('APROBADO'))return's-purple';
   if(BLOCKED.includes(x))return's-red';
-  if(x==='POR HACER'||x.includes('RECHAZADA'))return's-yellow';
+  if(x==='POR HACER')return's-yellow';
   return's-gray';
 };
 // ★ Color por tipo de issue
@@ -186,13 +180,10 @@ const iTypeBadge=t=>{
   if(x.includes('sub'))return'b-sub';
   return'b-itype-def';
 };
-
 const dueS=(d,s)=>{if(!d)return{c:'',t:''};const due=new Date(d),now=new Date();now.setHours(0,0,0,0);const diff=Math.ceil((due-now)/864e5);if(diff<0&&!IGNORE.includes((s||'').toUpperCase()))return{c:'overdue',t:'⚠️ Vencida: '};if(diff>=0&&diff<=3)return{c:'',t:'⏰ '};return{c:'',t:'📅 '}};
-
 const extFlt=()=>{const em=new Map(),um=new Map(),lm=new Map(),tm=new Map();S.all.forEach(i=>{const e=i.fields.parent?.fields?.summary;if(e)em.set(e,(em.get(e)||0)+1);const u=i.fields.assignee?.displayName;if(u)um.set(u,(um.get(u)||0)+1);(i.fields.labels||[]).forEach(l=>{if(l)lm.set(l,(lm.get(l)||0)+1)});const t=i.fields.issuetype?.name;if(t)tm.set(t,(tm.get(t)||0)+1)});S.epics=[...em].sort((a,b)=>b[1]-a[1]).map(e=>({n:e[0],c:e[1]}));S.users=[...um].sort((a,b)=>b[1]-a[1]).map(u=>({n:u[0],c:u[1]}));S.labels=[...lm].sort((a,b)=>b[1]-a[1]).map(l=>({n:l[0],c:l[1]}));S.itypes=[...tm].sort((a,b)=>b[1]-a[1]).map(t=>({n:t[0],c:t[1]}))};
 const appFlt=()=>{let f=[...S.all];if(S.stat)f=f.filter(i=>sCat(i.fields.status?.name)===S.stat);if(S.epic)f=f.filter(i=>i.fields.parent?.fields?.summary===S.epic);if(S.user)f=f.filter(i=>i.fields.assignee?.displayName===S.user);if(S.label)f=f.filter(i=>(i.fields.labels||[]).includes(S.label));if(S.itype)f=f.filter(i=>i.fields.issuetype?.name===S.itype);S.flt=f;S.pg=0};
 const clrFlt=()=>{S.stat=null;S.epic=null;S.user=null;S.label=null;S.itype=null;S.flt=[...S.all];S.pg=0};
-
 async function load(){
 S.load=true;S.all=[];S.flt=[];S.prog=0;S.tot=0;S.err=null;clrFlt();render();
 try{
@@ -204,7 +195,6 @@ try{
     const pf=S.proj==='ALL'?`project IN ("${PROJECTS.map(p=>p.k).join('","')}")`:`project="${S.proj}"`;
     jql=`${pf} ORDER BY updated DESC`;
   }
-
   let npt=null,all=[];
   do{
     let url=`${JIRA}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=summary,description,status,created,updated,resolutiondate,assignee,comment,duedate,parent,issuetype,labels`;
@@ -215,27 +205,21 @@ try{
     if(!S.tot&&data.total)S.tot=data.total;S.prog=all.length;render();
     npt=data.nextPageToken;if(npt)await new Promise(r=>setTimeout(r,50));
   }while(npt);
-
   // ★ En modo Ideas no filtramos épicas para mostrar todo
   S.all = S.proj === MODE_IDEAS
     ? all
     : all.filter(i=>(i.fields.issuetype?.name||'').toLowerCase()!=='epic');
-
   S.flt=[...S.all];extFlt();
 }catch(e){S.err=e.message}
 S.load=false;render();
 }
-
 function render(){document.getElementById('app').innerHTML=html();bindE()}
-
 function html(){
 const st=cStats(),hasF=S.stat||S.epic||S.user||S.label||S.itype;
 const si=S.pg*50,ei=si+50,di=S.flt.slice(si,ei),tp=Math.ceil(S.flt.length/50);
-
 // ★ Título y subtítulo dinámico según modo
 const titleLabel = S.proj === MODE_IDEAS ? 'Peticiones TECH' : '🔄 Changelog';
 const subtitleLabel = S.proj === MODE_IDEAS ? 'Ideas y propuestas del equipo' : 'Proyectos - EducaEdtech';
-
 return`
 <header class="header"><div class="hc"><h1>${titleLabel}</h1><p>${subtitleLabel}</p></div></header>
 <nav class="filters"><div class="fc">
@@ -255,7 +239,7 @@ ${!S.load&&!S.err&&S.all.length?`
 <div class="stat s-purple ${S.stat==='qa'?'active':''}" data-s="qa"><span>${st.qa}</span><span>En QA</span></div>
 <div class="stat s-red ${S.stat==='blocked'?'active':''}" data-s="blocked"><span>${st.blocked}</span><span>Bloqueadas</span></div>
 <div class="stat s-gray ${S.stat==='todo'?'active':''}" data-s="todo"><span>${st.todo}</span><span>Pendientes</span></div>
-<div class="stat s-orange ${S.stat==='cancelled'?'active':''}" data-s="cancelled"><span>${st.cancelled}</span><span>Canceladas</span></div>
+<div class="stat s-orange ${S.stat==='cancelled'?'active':''}" data-s="cancelled"><span>${st.cancelled}</span><span>Rechazadas</span></div>
 </div>
 ${genProjectLinks()}
 ${genHealthSummary(st)}
@@ -276,13 +260,11 @@ ${tp>1?`<div class="pag"><button id="prev" ${S.pg===0?'disabled':''}>← Anterio
 `:''}
 </main>`;
 }
-
 function cStats(){
   const s={completed:0,progress:0,blocked:0,todo:0,qa:0,cancelled:0,rejected:0};
   S.flt.forEach(i=>s[sCat(i.fields.status?.name)]++);
   return s;
 }
-
 function genITypeStats(){
   const t = S.flt.length || 1;
   const types = S.itypes.filter(tp => tp.n.toLowerCase() !== 'epic');
@@ -303,7 +285,6 @@ function genITypeStats(){
     </table>`;
 }
 window._itClick=n=>{S.itype=S.itype===n?null:n;appFlt();render()};
-
 function genLabelsTableInline(){
   const t = S.flt.length || 1;
   if(!S.labels.length) return '';
@@ -323,7 +304,6 @@ function genLabelsTableInline(){
     </table>`;
 }
 window._lbClick=n=>{S.label=S.label===n?null:n;appFlt();render()};
-
 function genSummaryTable(s){
   const t = S.flt.length || 1;
   const row = (icon, label, val) =>
@@ -338,12 +318,10 @@ function genSummaryTable(s){
       ${row('🧪','En QA', s.qa)}
       ${row('🚫','Bloqueadas', s.blocked)}
       ${row('📋','Pendientes', s.todo)}
-      ${row('🟠','Canceladas', s.cancelled)}
+      ${row('🟠','Rechazadas', s.cancelled)}
     </tbody>
   </table>`;
 }
-
-
 function genIssueTypeTable(){
   const t = S.flt.length || 1;
   if(!S.issueTypes.length) return '';
@@ -362,7 +340,6 @@ function genIssueTypeTable(){
     <tbody>${S.issueTypes.map(tp=>row(tp.n,tp.c)).join('')}</tbody>
   </table>`;
 }
-
 function genLabelsTable(){
   const t = S.flt.length || 1;
   if(!S.labels.length) return '';
@@ -381,7 +358,6 @@ function genLabelsTable(){
     <tbody>${S.labels.map(l=>row(l.n,l.c)).join('')}</tbody>
   </table>`;
 }
-
 function genProjectLinks(){
   // ★ En modo Ideas no mostramos enlaces de proyecto
   if(S.proj==='ALL'||S.proj===MODE_IDEAS)return'';
@@ -395,7 +371,6 @@ function genProjectLinks(){
   h+=`</div>`;
   return h;
 }
-
 function genHealthSummary(s){
   const t = S.flt.length;
   if(!t) return '';
@@ -404,13 +379,11 @@ function genHealthSummary(s){
   else if(s.blocked >= 3 || s.todo >= 3){status='🟠 Salud - Progreso con riesgos';color='#ea580c';}
   else if(s.blocked === 0){status='🟢 Salud - Excelente';color='#16a34a';}
   else{status='🟠 Salud - Progreso con riesgos';color='#ea580c';}
-
   // ★ Nombre dinámico para Peticiones TECH
   const projName =
     S.proj === MODE_IDEAS ? 'Peticiones TECH' :
     S.proj === 'ALL' ? 'Todos los proyectos' :
     PROJECTS.find(p=>p.k===S.proj)?.n || S.proj;
-
   const pct = Math.round(s.completed / t * 100);
   let txt = `<strong>${status} – ${projName}</strong><br>`;
   txt += `${pct}% de las tareas están completadas (${s.completed} de ${t}).`;
@@ -420,7 +393,6 @@ function genHealthSummary(s){
   if(s.todo)     txt += `<br>📋 ${s.todo} tareas pendientes.`;
   return `<div style="width:100%;box-sizing:border-box;background:#fff;border-left:6px solid ${color};padding:16px 20px;border-radius:8px;margin:16px 0;font-size:14px;line-height:1.6">${txt}</div>`;
 }
-
 function genStoppers(){
   const blockers=S.flt.filter(i=>BLOCKED.includes((i.fields.status?.name||'').toUpperCase()));
   if(!blockers.length)return'';
@@ -436,7 +408,6 @@ function genStoppers(){
   h+=`</div>`;
   return h;
 }
-
 function rEntry(i){
   const st=i.fields.status?.name||'',pr=PROJECTS.find(p=>p.k===i.key.split('-')[0]),ds=dueS(i.fields.duedate,st);
   const ep=i.fields.parent?.fields?.summary,desc=i.fields.description?trunc(adf(i.fields.description),120):'';
@@ -449,7 +420,6 @@ ${desc?`<p class="edesc">${desc}</p>`:''}
 ${cm?`<div class="cmt">💬 ${cm}</div>`:''}
 </div></div>`;
 }
-
 function bindE(){
   document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.proj=b.dataset.p;load()});
   document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.stat=S.stat===b.dataset.s?null:b.dataset.s;appFlt();render()});
@@ -463,7 +433,6 @@ function bindE(){
   document.getElementById('prev')?.addEventListener('click',()=>{if(S.pg>0){S.pg--;render();scrollTo(0,0)}});
   document.getElementById('next')?.addEventListener('click',()=>{if(S.pg<Math.ceil(S.flt.length/50)-1){S.pg++;render();scrollTo(0,0)}});
 }
-
 render();load();
 </script>
 </body>
